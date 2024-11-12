@@ -10,11 +10,13 @@ hdrs = glob([
 cc_import(
     name = "static_import_libunitree",
     hdrs = hdrs,
-    includes = ["include"],
+    includes = [
+        "include",
+    ],
     alwayslink = True,
     static_library = select({
-        "@platforms//cpu:x86_64": "//lib:amd64_lib",
-        "@platforms//cpu:arm64": "//lib:arm64_lib",
+        "@platforms//cpu:x86_64": "lib/x86_64/libunitree_sdk2.a",
+        "@platforms//cpu:arm64": "lib/aarch64/libunitree_sdk2.a",
         "//conditions:default": "@platforms//:incompatible",
     }),
 
@@ -23,12 +25,13 @@ cc_import(
 cc_library(
     name = "lib_unitree",
     hdrs = hdrs,
-    strip_include_prefix = "include",
-    includes = ["include"],
+    includes = [
+        "include",
+    ],
     deps = [
         ":static_import_libunitree",
-        "//thirdparty:lib_ddsc",
-        "//thirdparty:lib_ddscxx",
+        "//thirdparty/cyclonedds:lib_ddsc",
+        "//thirdparty/cyclonedds:lib_ddscxx",
     ],
     copts = ["-fpic"],
     linkopts = ["-pthread"],
