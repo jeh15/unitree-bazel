@@ -1,0 +1,14 @@
+cc_binary(
+    name = "publisher",
+    srcs = ["publisher.cpp", "HelloWorldData.cpp", "HelloWorldData.hpp"],
+    deps = ["//:lib_unitree"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "test",
+    srcs = ["HelloWorldData.cpp"],
+    hdrs = ["HelloWorldData.hpp"],
+    deps = ["//:lib_unitree"],
+    visibility = ["//visibility:public"],
+)

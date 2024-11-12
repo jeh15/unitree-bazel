@@ -1,0 +1,11 @@
+filegroup(
+    name = "arm64_lib",
+    srcs = ["aarch64/libunitree_sdk2.a"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "amd64_lib",
+    srcs = ["x86_64/libunitree_sdk2.a"],
+    visibility = ["//visibility:public"],
+)
