@@ -1,10 +1,15 @@
+link_options = select({
+    "@bazel_tools//src/conditions:darwin": [
+        "-undefined dynamic_lookup",
+        "-pthread",
+        "-dynamiclib",
+    ],
+    "//conditions:default": ["-pthread"],
+})
+
 hdrs = glob([
-    "include/unitree/common/*.hpp",
-    "include/unitree/common/**/*.hpp",
-    "include/unitree/idl/*.hpp",
-    "include/unitree/idl/**/*.hpp",
-    "include/unitree/robot/*.hpp",
-    "include/unitree/robot/**/*.hpp",
+    "include/*.hpp",
+    "include/**/*.hpp",
 ])
 
 cc_import(
@@ -19,7 +24,6 @@ cc_import(
         "@platforms//cpu:arm64": "lib/aarch64/libunitree_sdk2.a",
         "//conditions:default": "@platforms//:incompatible",
     }),
-
 )
 
 cc_library(
@@ -33,8 +37,8 @@ cc_library(
         "//thirdparty/cyclonedds:lib_ddsc",
         "//thirdparty/cyclonedds:lib_ddscxx",
     ],
-    copts = ["-fpic"],
-    linkopts = ["-pthread"],
+    copts = ["-fPIC"],
+    linkopts = link_options,
     alwayslink = True,
     visibility = ["//visibility:public"],
 )

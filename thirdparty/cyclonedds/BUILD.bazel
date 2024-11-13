@@ -1,3 +1,12 @@
+link_options = select({
+    "@bazel_tools//src/conditions:darwin": [
+        "-undefined dynamic_lookup",
+        "-pthread",
+        "-dynamiclib",
+    ],
+    "//conditions:default": ["-pthread"],
+})
+
 dds_hdrs = glob([
     "include/dds/*.h",
     "include/dds/**/*.h",
@@ -30,8 +39,8 @@ cc_library(
         "include/ddsc",
     ],
     deps = [":shared_import_ddsc"],
-    copts = ["-fpic"],
-    linkopts = ["-pthread"],
+    copts = ["-fPIC"],
+    linkopts = link_options,
     alwayslink = True,
     visibility = ["//visibility:public"],
 )
@@ -58,8 +67,8 @@ cc_library(
         "include/ddscxx",
     ],
     deps = [":shared_import_ddscxx"],
-    copts = ["-fpic"],
-    linkopts = ["-pthread"],
+    copts = ["-fPIC"],
+    linkopts = link_options,
     alwayslink = True,
     visibility = ["//visibility:public"],
 )
