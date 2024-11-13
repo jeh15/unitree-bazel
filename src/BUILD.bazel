@@ -5,17 +5,9 @@ cc_binary(
     visibility = ["//visibility:public"],
 )
 
-cc_library(
-    name = "test",
-    srcs = ["HelloWorldData.cpp"],
-    hdrs = ["HelloWorldData.hpp"],
-     deps = ["//thirdparty/unitree_sdk2:lib_unitree"],
-    visibility = ["//visibility:public"],
-)
-
 cc_binary(
-    name = "check",
-    srcs = ["check.cpp"],
+    name = "subscriber",
+    srcs = ["subscriber.cpp", "HelloWorldData.cpp", "HelloWorldData.hpp"],
+    deps = ["//thirdparty/unitree_sdk2:lib_unitree"],
     visibility = ["//visibility:public"],
-    copts = ["-std=c++17"],
 )
