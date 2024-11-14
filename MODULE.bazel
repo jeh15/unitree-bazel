@@ -7,7 +7,7 @@ module(
 )
 
 # Platforms:
-bazel_dep(name = "platforms")
+bazel_dep(name = "platforms", version = "0.0.10")
 
 # Autocomplete for Bazel:
 # Hedron's Compile Commands Extractor for Bazel
