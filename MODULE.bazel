@@ -6,6 +6,9 @@ module(
     name = "unitree-bazel",
 )
 
+# Platforms:
+bazel_dep(name = "platforms")
+
 # Autocomplete for Bazel:
 # Hedron's Compile Commands Extractor for Bazel
 # https://github.com/hedronvision/bazel-compile-commands-extractor
