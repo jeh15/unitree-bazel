@@ -1,4 +1,5 @@
 cc_library(
     name = "unitree_sdk2",
-    deps = ["//thirdparty/unitree_sdk2:lib_unitree"]
+    deps = ["//thirdparty/unitree_sdk2:lib_unitree"],
+    visibility = ["//visibility:public"],
 )
