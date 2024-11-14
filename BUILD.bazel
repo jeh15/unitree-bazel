@@ -1,5 +1,6 @@
+package(default_visibility = ["//visibility:public"])
+
 cc_library(
     name = "unitree_sdk2",
-    deps = ["//thirdparty/unitree_sdk2:lib_unitree"],
-    visibility = ["//visibility:public"],
+    deps = ["//unitree/unitree_sdk2:lib_unitree"],
 )

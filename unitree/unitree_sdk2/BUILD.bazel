@@ -33,8 +33,8 @@ cc_library(
     ],
     deps = [
         ":static_import_libunitree",
-        "//thirdparty/cyclonedds:lib_ddsc",
-        "//thirdparty/cyclonedds:lib_ddscxx",
+        "//unitree/cyclonedds:lib_ddsc",
+        "//unitree/cyclonedds:lib_ddscxx",
     ],
     copts = ["-fPIC"],
     linkopts = link_options,
