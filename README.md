@@ -9,7 +9,7 @@ bazel_dep(name = "unitree-bazel")
 git_override(
     module_name = "unitree-bazel",
     remote = "https://github.com/jeh15/unitree-bazel.git",
-    commit = "b4083cfd4635f989f1a625b06ff48596fd8ea0b3",
+    commit = "6c386c85ea3b7b31a3350dd0e758c3de98aacfd3",
 )
 ```
 
