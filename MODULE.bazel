@@ -3,7 +3,7 @@
 """
 
 module(
-    name = "unitree_sdk",
+    name = "unitree-bazel",
 )
 
 # Autocomplete for Bazel:
