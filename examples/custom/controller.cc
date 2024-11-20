@@ -38,19 +38,19 @@ std::map<std::string, uint8_t> MotorID = {
 };
 
 struct MotorCommand {
-    double q_setpoint[12] = {
+    float q_setpoint[12] = {
         0.0, 0.9, -1.8,
         0.0, 0.9, -1.8,
         0.0, 0.9, -1.8,
         0.0, 0.9, -1.8
     };
-    double qd_setpoint[12] = { 0 };
-    double torque_feedforward[12] = { 0 };
+    float qd_setpoint[12] = { 0 };
+    float torque_feedforward[12] = { 0 };
 };
 
 struct MotorState {
-    double q[12] = { 0 };
-    double qd[12] = { 0 };
+    float q[12] = { 0 };
+    float qd[12] = { 0 };
 };
 
 class MotorController {
@@ -69,51 +69,52 @@ private:
 
 private:
     const struct {
-        double q_lb[12] = {
+        float q_lb[12] = {
             -1.0472, -1.5708, -2.7227,
             -1.0472, -1.5708, -2.7227,
             -1.0472, -0.5236, -2.7227,
             -1.0472, -0.5236, -2.7227
         };
-        double q_ub[12] = {
+        float q_ub[12] = {
             1.0472, 3.4907, -0.83776,
             1.0472, 3.4907, -0.83776,
             1.0472, 4.5379, -0.83776,
             1.0472, 4.5379, -0.83776,
         };
-        double qd_lb[12] = {
+        float qd_lb[12] = {
             -0.5, -0.5, -0.5,
             -0.5, -0.5, -0.5,
             -0.5, -0.5, -0.5,
             -0.5, -0.5, -0.5
         };
-        double qd_ub[12] = {
+        float qd_ub[12] = {
             0.5, 0.5, 0.5,
             0.5, 0.5, 0.5,
             0.5, 0.5, 0.5,
             0.5, 0.5, 0.5
         };
-        double tau_lb[12] = {
+        float tau_lb[12] = {
             -5.0, -5.0, -5.0,
             -5.0, -5.0, -5.0,
             -5.0, -5.0, -5.0,
             -5.0, -5.0, -5.0
         };
-        double tau_ub[12] = {
+        float tau_ub[12] = {
             5.0, 5.0, 5.0,
             5.0, 5.0, 5.0,
             5.0, 5.0, 5.0,
             5.0, 5.0, 5.0
         };
     } motor_bounds;
+    std::string target = "Front_Right_Abduction";
     float kp[12] = {
-        0.0, 15.0, 0.0,
+        5.0, 0.0, 0.0,
         0.0, 0.0, 0.0,
         0.0, 0.0, 0.0,
         0.0, 0.0, 0.0
     };
     float kd[12] = {
-        0.0, 1.0, 0.0,
+        0.0, 0.0, 0.0,
         0.0, 0.0, 0.0,
         0.0, 0.0, 0.0,
         0.0, 0.0, 0.0
@@ -198,36 +199,36 @@ void MotorController::init_cmd_msg() {
 }
 
 void MotorController::robot_state_msg_handler(const void* message) {
-    unitree_go::msg::dds_::LowState_* low_state_msg = (unitree_go::msg::dds_::LowState_*)message;
+    robot_state = *(unitree_go::msg::dds_::LowState_*)message;
 
-    // Iterate over motors:
-    for(const auto& [key, value] : MotorID) {
-        motor_states.q[value] = low_state_msg->motor_state()[value].q();
-        motor_states.qd[value] = low_state_msg->motor_state()[value].dq();
-    }
+    // // Iterate over motors:
+    // for(const auto& [key, value] : MotorID) {
+    //     motor_states.q[value] = low_state_msg->motor_state()[value].q();
+    //     motor_states.qd[value] = low_state_msg->motor_state()[value].dq();
+    // }
 
-    // Look at left front hip motor:
-    std::string key = "Front_Right_Hip";
-    auto motor_position = low_state_msg->motor_state()[MotorID[key]].q();
-    std::cout << key << " Motor Position: " << motor_position << std::endl;   
+    // Look at target motor:
+    // auto motor_position = low_state_msg->motor_state()[MotorID[target]].q();
+    // std::cout << target << " Motor Position: " << motor_position << std::endl;
 }
 
 void MotorController::control_loop() {
     // Iterate over motors:
     for(const auto& [key, value] : MotorID) {
-        double q_error = motor_commands.q_setpoint[value] - motor_states.q[value];
-        double qd_error = motor_commands.qd_setpoint[value] - motor_states.qd[value];
-        double torque_cmd = motor_commands.torque_feedforward[value] + kp[value] * (q_error) + kd[value] * (qd_error);
-        double saturated_cmd = std::clamp(torque_cmd, motor_bounds.tau_lb[value], motor_bounds.tau_ub[value]);
+        float q = robot_state.motor_state()[value].q();
+        float qd = robot_state.motor_state()[value].dq();
+        float q_error = motor_commands.q_setpoint[value] - q;
+        float qd_error = motor_commands.qd_setpoint[value] - qd;
+        float torque_cmd = motor_commands.torque_feedforward[value] + kp[value] * (q_error) + kd[value] * (qd_error);
+        float saturated_cmd = std::clamp(torque_cmd, motor_bounds.tau_lb[value], motor_bounds.tau_ub[value]);
+        if (value == MotorID[target])
+            std::cout << qd << std::endl;
         motor_cmd.motor_cmd()[value].q() = 0.0;
         motor_cmd.motor_cmd()[value].dq() = 0.0;
         motor_cmd.motor_cmd()[value].kp() = 0.0;
         motor_cmd.motor_cmd()[value].kd() = 0.0;
         motor_cmd.motor_cmd()[value].tau() = saturated_cmd ;
     }
-
-    // Print From Inner Loop:
-    std::cout << "Inner Loop Setpoint: " << motor_commands.q_setpoint[MotorID["Front_Right_Hip"]] << std::endl;
 
     // Checksum:
     motor_cmd.crc() = crc32_core((uint32_t *)&motor_cmd, (sizeof(unitree_go::msg::dds_::LowCmd_)>>2)-1);
@@ -239,14 +240,13 @@ void MotorController::control_loop() {
 void MotorController::update_command(MotorCommand& motor_cmd) {
     // Iterate over motors and update motor command:
     for(const auto& [key, value] : MotorID) {
-        double q_setpoint = std::clamp(motor_cmd.q_setpoint[value], motor_bounds.q_lb[value], motor_bounds.q_ub[value]);
-        double qd_setpoint = std::clamp(motor_cmd.qd_setpoint[value], motor_bounds.qd_lb[value], motor_bounds.qd_ub[value]);
-        double torque_feedforward = std::clamp(motor_cmd.torque_feedforward[value], motor_bounds.tau_lb[value], motor_bounds.tau_ub[value]);
+        float q_setpoint = std::clamp(motor_cmd.q_setpoint[value], motor_bounds.q_lb[value], motor_bounds.q_ub[value]);
+        float qd_setpoint = std::clamp(motor_cmd.qd_setpoint[value], motor_bounds.qd_lb[value], motor_bounds.qd_ub[value]);
+        float torque_feedforward = std::clamp(motor_cmd.torque_feedforward[value], motor_bounds.tau_lb[value], motor_bounds.tau_ub[value]);
         motor_commands.q_setpoint[value] = q_setpoint;
         motor_commands.qd_setpoint[value] = qd_setpoint; 
         motor_commands.torque_feedforward[value] = torque_feedforward; 
     }
-    std::cout << "Outter Loop Setpoint: " << motor_commands.q_setpoint[MotorID["Front_Right_Hip"]] << std::endl;
 }
 
 int main(int argc, const char** argv) {
@@ -268,11 +268,8 @@ int main(int argc, const char** argv) {
 
     while (true) {
         auto elapsed_time = std::chrono::high_resolution_clock::now() - start;
-        if (std::chrono::duration_cast<std::chrono::duration<double>>(elapsed_time).count() > 5.0) {
-            motor_command.q_setpoint[MotorID["Front_Right_Hip"]] = 1.2;
-        }
         // Send MotorController Command:
-        controller.update_command(motor_command);
+        // controller.update_command(motor_command);
 
         // Sleep for dt:
         std::this_thread::sleep_for(std::chrono::milliseconds(dt));
