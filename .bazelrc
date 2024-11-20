@@ -1,2 +1,2 @@
 common --enable_bzlmod
---cxxopt="-std=c++17"
+build --repo_env=BAZEL_CXXOPTS="-std=c++17"

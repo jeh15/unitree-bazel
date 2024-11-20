@@ -19,22 +19,6 @@ using namespace unitree::robot;
 constexpr double PosStopF = (2.146E+9f);
 constexpr double VelStopF = (16000.0f);
 
-// enum MotorID : uint8_t {
-//     Front_Right_Abduction,
-//     Front_Right_Hip,
-//     Front_Right_Knee,
-//     Front_Left_Abduction,
-//     Front_Left_Hip,
-//     Front_Left_Knee,
-//     Hind_Right_Abduction,
-//     Hind_Right_Hip,
-//     Hind_Right_Knee,
-//     Hind_Left_Abduction,
-//     Hind_Left_Hip,
-//     Hind_Left_Knee,
-//     MAX_MotorID
-// };
-
 std::map<std::string, uint8_t> MotorID = {
     {"Front_Right_Abduction", 0},
     {"Front_Right_Hip", 1},
@@ -80,10 +64,18 @@ void RobotState::Init() {
 
 void RobotState::LowStateMessageHandler(const void* message) {
     unitree_go::msg::dds_::LowState_* low_state_msg = (unitree_go::msg::dds_::LowState_*)message;
-    for(const auto& [key, value] : MotorID) {
-        auto motor_position = low_state_msg->motor_state()[value].q();
-        std::cout << key << ":" << motor_position << std::endl;
-    }
+    
+    // Iterate over map:
+    // for(const auto& [key, value] : MotorID) {
+    //     auto motor_position = low_state_msg->motor_state()[value].q();
+    //     std::cout << key << ":" << motor_position << std::endl;
+    // }
+
+    // Look at left front hip motor:
+    std::string key = "Front_Right_Hip";
+    auto motor_position = low_state_msg->motor_state()[MotorID[key]].q();
+    std::cout << key << " Motor Position: " << motor_position << std::endl;
+    
 }
 
 int main(int argc, const char** argv)
