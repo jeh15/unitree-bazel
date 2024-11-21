@@ -46,6 +46,8 @@ struct MotorCommand {
     };
     float qd_setpoint[12] = { 0 };
     float torque_feedforward[12] = { 0 };
+    float kp[12] = { 0 };
+    float kd[12] = { 0 };
 };
 
 struct MotorState {
@@ -107,18 +109,6 @@ private:
         };
     } motor_bounds;
     std::string target = "Front_Right_Abduction";
-    float kp[12] = {
-        5.0, 0.0, 0.0,
-        0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0
-    };
-    float kd[12] = {
-        0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0
-    };
 
     unitree_go::msg::dds_::LowCmd_ motor_cmd{};
     unitree_go::msg::dds_::LowState_ robot_state{};
@@ -200,34 +190,17 @@ void MotorController::init_cmd_msg() {
 
 void MotorController::robot_state_msg_handler(const void* message) {
     robot_state = *(unitree_go::msg::dds_::LowState_*)message;
-
-    // // Iterate over motors:
-    // for(const auto& [key, value] : MotorID) {
-    //     motor_states.q[value] = low_state_msg->motor_state()[value].q();
-    //     motor_states.qd[value] = low_state_msg->motor_state()[value].dq();
-    // }
-
-    // Look at target motor:
-    // auto motor_position = low_state_msg->motor_state()[MotorID[target]].q();
-    // std::cout << target << " Motor Position: " << motor_position << std::endl;
 }
 
 void MotorController::control_loop() {
     // Iterate over motors:
     for(const auto& [key, value] : MotorID) {
-        float q = robot_state.motor_state()[value].q();
-        float qd = robot_state.motor_state()[value].dq();
-        float q_error = motor_commands.q_setpoint[value] - q;
-        float qd_error = motor_commands.qd_setpoint[value] - qd;
-        float torque_cmd = motor_commands.torque_feedforward[value] + kp[value] * (q_error) + kd[value] * (qd_error);
-        float saturated_cmd = std::clamp(torque_cmd, motor_bounds.tau_lb[value], motor_bounds.tau_ub[value]);
-        if (value == MotorID[target])
-            std::cout << qd << std::endl;
-        motor_cmd.motor_cmd()[value].q() = 0.0;
-        motor_cmd.motor_cmd()[value].dq() = 0.0;
-        motor_cmd.motor_cmd()[value].kp() = 0.0;
-        motor_cmd.motor_cmd()[value].kd() = 0.0;
-        motor_cmd.motor_cmd()[value].tau() = saturated_cmd ;
+        float torque_cmd = std::clamp(motor_commands.torque_feedforward[value], motor_bounds.tau_lb[value], motor_bounds.tau_ub[value]);
+        motor_cmd.motor_cmd()[value].q() = motor_commands.q_setpoint[value];
+        motor_cmd.motor_cmd()[value].dq() = motor_commands.qd_setpoint[value];
+        motor_cmd.motor_cmd()[value].kp() = motor_commands.kp[value];
+        motor_cmd.motor_cmd()[value].kd() = motor_commands.kd[value];
+        motor_cmd.motor_cmd()[value].tau() = torque_cmd;
     }
 
     // Checksum:
@@ -243,9 +216,13 @@ void MotorController::update_command(MotorCommand& motor_cmd) {
         float q_setpoint = std::clamp(motor_cmd.q_setpoint[value], motor_bounds.q_lb[value], motor_bounds.q_ub[value]);
         float qd_setpoint = std::clamp(motor_cmd.qd_setpoint[value], motor_bounds.qd_lb[value], motor_bounds.qd_ub[value]);
         float torque_feedforward = std::clamp(motor_cmd.torque_feedforward[value], motor_bounds.tau_lb[value], motor_bounds.tau_ub[value]);
+        float kp = std::clamp(motor_cmd.kp[value], 0.0f, 100.0f);
+        float kd = std::clamp(motor_cmd.kd[value], 0.0f, 100.0f);
         motor_commands.q_setpoint[value] = q_setpoint;
         motor_commands.qd_setpoint[value] = qd_setpoint; 
-        motor_commands.torque_feedforward[value] = torque_feedforward; 
+        motor_commands.torque_feedforward[value] = torque_feedforward;
+        motor_commands.kp[value] = kp[value];
+        motor_commands.kd[value] = kd[value];
     }
 }
 
