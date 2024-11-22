@@ -9,6 +9,9 @@ module(
 # Platforms:
 bazel_dep(name = "platforms", version = "0.0.10")
 
+# Pybind11:
+bazel_dep(name = "pybind11_bazel", version = "2.13.6")
+
 # Autocomplete for Bazel:
 # Hedron's Compile Commands Extractor for Bazel
 # https://github.com/hedronvision/bazel-compile-commands-extractor
