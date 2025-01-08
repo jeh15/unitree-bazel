@@ -29,11 +29,12 @@ public:
     ~MotorController() {}
     void init();
     void update_command(lowleveltypes::MotorCommand& motor_cmd);
-    void get_state(const std::string& motor_name);
+    /* Add back for debug purposes? */
+    // void get_state(const std::string& motor_name);
     lowleveltypes::LowState get_low_state();
     lowleveltypes::IMUState get_imu_state();
     lowleveltypes::MotorState get_motor_state();
-
+ 
 private:
     void init_cmd_msg();
     void robot_state_msg_handler(const void* messages);
@@ -103,19 +104,15 @@ uint32_t crc32_core(uint32_t* ptr, uint32_t len)
     unsigned int CRC32 = 0xFFFFFFFF;
     const unsigned int dwPolynomial = 0x04c11db7;
 
-    for (unsigned int i = 0; i < len; i++)
-    {
+    for (unsigned int i = 0; i < len; i++) {
         xbit = 1 << 31;
         data = ptr[i];
-        for (unsigned int bits = 0; bits < 32; bits++)
-        {
-            if (CRC32 & 0x80000000)
-            {
+        for (unsigned int bits = 0; bits < 32; bits++) {
+            if (CRC32 & 0x80000000) {
                 CRC32 <<= 1;
                 CRC32 ^= dwPolynomial;
             }
-            else
-            {
+            else {
                 CRC32 <<= 1;
             }
 
@@ -208,16 +205,35 @@ void MotorController::update_command(lowleveltypes::MotorCommand& motor_cmd) {
 
 lowleveltypes::LowState MotorController::get_low_state() {
     lowleveltypes::LowState low_state;
-    low_state.foot_force = std::to_array(robot_state.foot_force());
+    for (int i = 0; i < 4; i++) {
+        low_state.foot_force[i] = robot_state.foot_force()[i];
+    }
+
+    /* C++20 Required */
+    // low_state.foot_force = std::to_array(robot_state.foot_force());
+
     return low_state;
 }
 
 lowleveltypes::IMUState MotorController::get_imu_state() {
     lowleveltypes::IMUState imu_state;
-    imu_state.quaternion = std::to_array(robot_state.imu_state().quaternion());
-    imu_state.gyroscope = std::to_array(robot_state.imu_state().gyroscope());
-    imu_state.accelerometer = std::to_array(robot_state.imu_state().accelerometer());
-    imu_state.rpy = std::to_array(robot_state.imu_state().rpy());
+
+    for (int i = 0; i < 4; i++) {
+        imu_state.quaternion[i] = robot_state.imu_state().quaternion()[i];
+    }
+
+    for (int i = 0; i < 3; i++) {
+        imu_state.gyroscope[i] = robot_state.imu_state().gyroscope()[i];
+        imu_state.accelerometer[i] = robot_state.imu_state().accelerometer()[i];
+        imu_state.rpy[i] = robot_state.imu_state().rpy()[i];
+    }
+
+    /* C++20 Required */
+    // imu_state.quaternion = std::to_array(robot_state.imu_state().quaternion());
+    // imu_state.gyroscope = std::to_array(robot_state.imu_state().gyroscope());
+    // imu_state.accelerometer = std::to_array(robot_state.imu_state().accelerometer());
+    // imu_state.rpy = std::to_array(robot_state.imu_state().rpy());
+
     return imu_state;
 }
 
@@ -231,20 +247,3 @@ lowleveltypes::MotorState MotorController::get_motor_state() {
     }
     return motor_state;
 }
-
-// idea for immutable data:
-// // Return data as python dictionary:
-// py::dict MotorController::get_imu_state() {
-//     std::array<float, 4> quaternion = robot_state.imu_state().quaternion();
-//     std::array<float, 3> gyroscope = robot_state.imu_state().gyroscope();
-//     std::array<float, 3> accelerometer = robot_state.imu_state().accelerometer();
-//     std::array<float, 3> rpy = robot_state.imu_state().rpy();
-//     py::dict imu_state(
-//         "quaternion"_a=quaternion,
-//         "gyroscope"_a=gyroscope,
-//         "accelerometer"_a=accelerometer,
-//         "rpy"_a=rpy
-//     );
-//     return imu_state
-// }
-
