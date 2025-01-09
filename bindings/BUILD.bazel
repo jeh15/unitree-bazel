@@ -1,12 +1,5 @@
 load("@pybind11_bazel//:build_defs.bzl", "pybind_extension", "pybind_library")
-load("@rules_python//python:defs.bzl", "py_library", "py_test")
-
-
-pybind_library(
-    name = "example_cc_library",
-    srcs = ["example_py.cc"],
-    visibility = ["//visibility:public"],
-)
+load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 
 cc_library(
     name = "lowlevelapi_types",
@@ -15,7 +8,7 @@ cc_library(
 )
 
 cc_library(
-    name = "lowlevelapi",
+    name = "lowlevelapi_cc",
     srcs = ["lowlevelapi.h"],
     deps = [
         ":lowlevelapi_types",
@@ -28,20 +21,31 @@ pybind_library(
     name = "lowlevelapi_cc_library",
     srcs = ["lowlevelapi_py.cc"],
     deps = [
-        ":lowlevelapi",
+        ":lowlevelapi_cc",
         ":lowlevelapi_types",
     ],
+    alwayslink = True,
     visibility = ["//visibility:public"],
 )
 
 pybind_extension(
-    name = "lowlevelapi_api",
-    deps = [":lowlowlevelapi_cc_library"],
+    name = "unitree_api",
+    deps = [":lowlevelapi_cc_library"],
     visibility = ["//visibility:public"],
 )
 
 py_library(
     name = "lowlevelapi_py_library",
-    data = [":lowlevelapi_api.so"],
+    data = [":unitree_api"],
     imports = ["."],
+    visibility = ["//visibility:public"],
+)
+
+py_binary(
+    name = "test",
+    srcs = ["test.py"],
+    deps = [
+        ":lowlevelapi_py_library",
+    ],
+    visibility = ["//visibility:public"],
 )

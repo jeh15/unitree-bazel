@@ -8,7 +8,28 @@
 namespace py = pybind11;
 using namespace pybind11::literals;
 
+
 PYBIND11_MODULE(unitree_api, m) {
+    m.doc() = "Unitree API bindings";
+
+    py::class_<lowleveltypes::LowState>(m, "LowState")
+        .def(py::init<>())
+        .def_readwrite("foot_force", &lowleveltypes::LowState::foot_force);
+
+    py::class_<lowleveltypes::IMUState>(m, "IMUState")
+        .def(py::init<>())
+        .def_readwrite("quaternion", &lowleveltypes::IMUState::quaternion)
+        .def_readwrite("gyroscope", &lowleveltypes::IMUState::gyroscope)
+        .def_readwrite("accelerometer", &lowleveltypes::IMUState::accelerometer)
+        .def_readwrite("rpy", &lowleveltypes::IMUState::rpy);
+
+    py::class_<lowleveltypes::MotorState>(m, "MotorState")
+        .def(py::init<>())
+        .def_readwrite("q", &lowleveltypes::MotorState::q)
+        .def_readwrite("qd", &lowleveltypes::MotorState::qd)
+        .def_readwrite("qdd", &lowleveltypes::MotorState::qdd)
+        .def_readwrite("torque_estimate", &lowleveltypes::MotorState::torque_estimate);
+
     py::class_<lowleveltypes::MotorCommand>(m, "MotorCommand")
         .def(py::init<>())
         .def_readwrite("q_setpoint", &lowleveltypes::MotorCommand::q_setpoint)

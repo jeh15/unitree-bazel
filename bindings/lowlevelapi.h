@@ -27,7 +27,7 @@ class MotorController {
 public:
     explicit MotorController() {}
     ~MotorController() {}
-    void init();
+    void init(const std::string& network_name);
     void update_command(lowleveltypes::MotorCommand& motor_cmd);
     /* Add back for debug purposes? */
     // void get_state(const std::string& motor_name);
@@ -42,6 +42,7 @@ private:
     const double PosStopF = (2.146E+9f);
     const double VelStopF = (16000.0f);
     lowleveltypes::MotorCommand motor_commands;
+    std::string network_name;
 
 private:
     const struct {
@@ -125,7 +126,10 @@ uint32_t crc32_core(uint32_t* ptr, uint32_t len)
     return CRC32;
 }
 
-void MotorController::init() {
+void MotorController::init(const std::string& network_name) {
+    // Initialize Channel:
+    ChannelFactory::Instance()->Init(0, network_name);
+
     // Initialization Command Message:
     init_cmd_msg();
 
