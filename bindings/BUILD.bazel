@@ -1,5 +1,6 @@
 load("@pybind11_bazel//:build_defs.bzl", "pybind_extension", "pybind_library")
 load("@rules_python//python:defs.bzl", "py_library", "py_binary")
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 
 cc_library(
     name = "lowlevelapi_types",
@@ -46,6 +47,7 @@ py_binary(
     srcs = ["test.py"],
     deps = [
         ":lowlevelapi_py_library",
+        "@pypi//numpy",
     ],
     visibility = ["//visibility:public"],
 )
