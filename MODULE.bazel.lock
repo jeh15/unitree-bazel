@@ -1382,11 +1382,11 @@
     "@@rules_python~//python/extensions:pip.bzl%pip": {
       "general": {
         "bzlTransitiveDigest": "0k64mL5btSdKrjUlFDLs8Az9Tu1OwdI2MX+W2lN6nlE=",
-        "usagesDigest": "fNwJzVTiQb1/3VDySVNbswBbCtGvapt3YFzjQf10RUk=",
+        "usagesDigest": "hZNHuTSpSWSayuG8FMUi7SBnAnrKiX59mjMY2SGMmio=",
         "recordedFileInputs": {
+          "@@//bindings/requirements.txt": "7da7dbf481dc08ca15bb573501ff1d616a4e0720e1eefbcc114d14f9e95fde17",
           "@@rules_python~//tools/publish/requirements_linux.txt": "8175b4c8df50ae2f22d1706961884beeb54e7da27bd2447018314a175981997d",
           "@@rules_fuzzing~//fuzzing/requirements.txt": "ab04664be026b632a0d2a2446c4f65982b7654f5b6851d2f9d399a19b7242a5b",
-          "@@//requirements.txt": "7da7dbf481dc08ca15bb573501ff1d616a4e0720e1eefbcc114d14f9e95fde17",
           "@@rules_python~//tools/publish/requirements_windows.txt": "7673adc71dc1a81d3661b90924d7a7c0fc998cd508b3cb4174337cef3f2de556",
           "@@protobuf~//python/requirements.txt": "983be60d3cec4b319dcab6d48aeb3f5b2f7c3350f26b3a9e97486c37967c73c5",
           "@@rules_python~//tools/publish/requirements_darwin.txt": "2994136eab7e57b083c3de76faf46f70fad130bc8e7360a7fed2b288b69e79dc"

@@ -27,7 +27,7 @@ pip.parse(
     download_only = True,
     hub_name = "pypi",
     python_version = "3.12",
-    requirements_lock = "requirements.txt",
+    requirements_lock = "//bindings:requirements.txt",
 )
 use_repo(pip, "pypi")
 
