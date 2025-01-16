@@ -1,5 +1,6 @@
 load("@pybind11_bazel//:build_defs.bzl", "pybind_extension", "pybind_library")
 load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_python//python:packaging.bzl", "py_package", "py_wheel", "py_wheel_dist")
 
 cc_library(
     name = "lowlevelapi_types",
@@ -39,4 +40,22 @@ py_library(
     data = [":unitree_api"],
     imports = ["."],
     visibility = ["//visibility:public"],
+)
+
+py_package(
+    name = "unitree_pkg",
+    deps = [":unitree_api_library"],
+)
+
+py_wheel(
+    name = "unitree_go2_api",
+    twine = "@publish_deps//twine",
+    distribution = "unitree_go2_api",
+    summary = "Custom python bindings for the Unitree Go2 robot.",
+    python_requires = ">=3.12",
+    python_tag = "py3",
+    version = "0.0.1",
+    deps = [
+        ":unitree_pkg",
+    ],
 )

@@ -1382,9 +1382,8 @@
     "@@rules_python~//python/extensions:pip.bzl%pip": {
       "general": {
         "bzlTransitiveDigest": "0k64mL5btSdKrjUlFDLs8Az9Tu1OwdI2MX+W2lN6nlE=",
-        "usagesDigest": "hZNHuTSpSWSayuG8FMUi7SBnAnrKiX59mjMY2SGMmio=",
+        "usagesDigest": "KkRRUnGCVzTq1HpPZ0WfnX2jxUofTTNfzyMSU7fVPSQ=",
         "recordedFileInputs": {
-          "@@//bindings/requirements.txt": "7da7dbf481dc08ca15bb573501ff1d616a4e0720e1eefbcc114d14f9e95fde17",
           "@@rules_python~//tools/publish/requirements_linux.txt": "8175b4c8df50ae2f22d1706961884beeb54e7da27bd2447018314a175981997d",
           "@@rules_fuzzing~//fuzzing/requirements.txt": "ab04664be026b632a0d2a2446c4f65982b7654f5b6851d2f9d399a19b7242a5b",
           "@@rules_python~//tools/publish/requirements_windows.txt": "7673adc71dc1a81d3661b90924d7a7c0fc998cd508b3cb4174337cef3f2de556",
@@ -3142,27 +3141,6 @@
               ]
             }
           },
-          "pypi_312_numpy": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
-            "attributes": {
-              "dep_template": "@pypi//{name}:{target}",
-              "download_only": true,
-              "experimental_target_platforms": [
-                "cp312_linux_aarch64",
-                "cp312_linux_arm",
-                "cp312_linux_ppc",
-                "cp312_linux_s390x",
-                "cp312_linux_x86_64",
-                "cp312_osx_aarch64",
-                "cp312_osx_x86_64",
-                "cp312_windows_x86_64"
-              ],
-              "python_interpreter_target": "@@rules_python~~python~python_3_12_host//:python",
-              "repo": "pypi_312",
-              "requirement": "numpy==2.2.0"
-            }
-          },
           "rules_python_publish_deps_311_nh3_cp37_abi3_macosx_10_12_x86_64_7b7c2a3c": {
             "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
             "ruleClassName": "whl_library",
@@ -3912,21 +3890,6 @@
               "urls": [
                 "https://files.pythonhosted.org/packages/54/bf/5c0000c44ebc80123ecbdddba1f5dcd94a5ada602a9c225d84b5aaa55e86/zipp-3.20.2.tar.gz"
               ]
-            }
-          },
-          "pypi": {
-            "bzlFile": "@@rules_python~//python/private/pypi:hub_repository.bzl",
-            "ruleClassName": "hub_repository",
-            "attributes": {
-              "repo_name": "pypi",
-              "extra_hub_aliases": {},
-              "whl_map": {
-                "numpy": "{\"pypi_312_numpy\":[{\"version\":\"3.12\"}]}"
-              },
-              "packages": [
-                "numpy"
-              ],
-              "groups": {}
             }
           },
           "rules_python_publish_deps": {
