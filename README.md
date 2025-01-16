@@ -1,6 +1,8 @@
 # Bazel build for Unitree SDK 2
 Bazel build for the Unitree SDK 2 library that allows importing via `bazel_dep`.
 
+Bindings only target the Unitree Go2 API.
+
 ## Usage
 Add the following to your `MODULE.bazel` file:
 
