@@ -1,5 +1,5 @@
 load("@pybind11_bazel//:build_defs.bzl", "pybind_extension", "pybind_library")
-load("@rules_python//python:defs.bzl", "py_library", "py_binary")
+load("@rules_python//python:defs.bzl", "py_library")
 
 cc_library(
     name = "lowlevelapi_types",
@@ -38,15 +38,5 @@ py_library(
     name = "unitree_api_library",
     data = [":unitree_api"],
     imports = ["."],
-    visibility = ["//visibility:public"],
-)
-
-py_binary(
-    name = "test",
-    srcs = ["test.py"],
-    deps = [
-        ":unitree_api_library",
-        "@pypi//numpy",
-    ],
     visibility = ["//visibility:public"],
 )
