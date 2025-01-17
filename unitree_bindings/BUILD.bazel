@@ -47,14 +47,20 @@ py_package(
     deps = [":unitree_api_library"],
 )
 
+exports_files(
+    ["description.md"],
+    visibility = ["//visibility:public"],
+)
+
 py_wheel(
     name = "unitree_go2_api",
     twine = "@publish_deps//twine",
     distribution = "unitree_go2_api",
     summary = "Custom python bindings for the Unitree Go2 robot.",
+    description_file = ":description.md",
     python_requires = ">=3.12",
     python_tag = "py3",
-    version = "0.0.1",
+    version = "0.0.4",
     deps = [
         ":unitree_pkg",
     ],

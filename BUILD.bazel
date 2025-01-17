@@ -1,6 +1,15 @@
+load("@rules_python//python:defs.bzl", "py_library")
+
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
     name = "unitree_sdk2",
     deps = ["//unitree/unitree_sdk2:lib_unitree"],
+)
+
+py_library(
+    name = "unitree_api_library",
+    data = ["//unitree_bindings:unitree_api"],
+    imports = ["//unitree_bindings"],
+    visibility = ["//visibility:public"],
 )
