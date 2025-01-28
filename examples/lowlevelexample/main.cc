@@ -28,6 +28,7 @@ public:
     {}
 
     void Init();
+    void Stop();
 
 private:
     void InitLowCmd();
@@ -104,6 +105,11 @@ void Custom::Init()
 
     /*loop publishing thread*/
     lowCmdWriteThreadPtr = CreateRecurrentThreadEx("writebasiccmd", UT_CPU_ID_NONE, 2000, &Custom::LowCmdWrite, this);
+}
+
+void Custom::Stop() {
+    lowcmd_publisher->CloseChannel();
+    lowstate_subscriber->CloseChannel();
 }
 
 void Custom::InitLowCmd()
@@ -205,6 +211,8 @@ int main(int argc, const char** argv)
 
     Custom custom;
     custom.Init();
+
+    // custom.Stop();
 
     while (1)
     {

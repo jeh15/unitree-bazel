@@ -28,7 +28,8 @@ public:
     {}
 
     void Init();
-
+    void Stop();
+    
 private:
     void InitLowCmd();
     void LowStateMessageHandler(const void* messages);
@@ -104,6 +105,12 @@ void Custom::Init()
 
     /*loop publishing thread*/
     lowCmdWriteThreadPtr = CreateRecurrentThreadEx("writebasiccmd", UT_CPU_ID_NONE, 2000, &Custom::LowCmdWrite, this);
+}
+
+void Custom::Stop() {
+    lowcmd_publisher->CloseChannel();
+    lowstate_subscriber->CloseChannel();
+    lowCmdWriteThreadPtr->mQuit = true;
 }
 
 void Custom::InitLowCmd()
@@ -195,16 +202,12 @@ void Custom::LowCmdWrite()
 
 int main(int argc, const char** argv)
 {
-    if (argc < 2)
-    {
-        std::cout << "Usage: " << argv[0] << " networkInterface" << std::endl;
-        exit(-1); 
-    }
 
-    ChannelFactory::Instance()->Init(0, argv[1]);
+    ChannelFactory::Instance()->Init(0, "eno2");
 
     Custom custom;
     custom.Init();
+    custom.Stop();
 
     while (1)
     {

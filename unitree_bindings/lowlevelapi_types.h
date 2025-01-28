@@ -58,4 +58,45 @@ namespace lowleveltypes {
         std::array<float, num_motors> kp = { 0 };
         std::array<float, num_motors> kd = { 0 };
     };
+
+    // Motor Limit Constants:
+    struct MotorLimits {
+        std::array<float, lowleveltypes::num_motors> q_lb = {
+            -1.0472, -1.5708, -2.7227,
+            -1.0472, -1.5708, -2.7227,
+            -1.0472, -0.5236, -2.7227,
+            -1.0472, -0.5236, -2.7227
+        };
+        std::array<float, lowleveltypes::num_motors> q_ub = {
+            1.0472, 3.4907, -0.83776,
+            1.0472, 3.4907, -0.83776,
+            1.0472, 4.5379, -0.83776,
+            1.0472, 4.5379, -0.83776,
+        };
+        std::array<float, lowleveltypes::num_motors> qd_lb = {
+            -10.0, -10.0, -10.0,
+            -10.0, -10.0, -10.0,
+            -10.0, -10.0, -10.0,
+            -10.0, -10.0, -10.0
+        };
+        std::array<float, lowleveltypes::num_motors> qd_ub = {
+            10.0, 10.0, 10.0,
+            10.0, 10.0, 10.0,
+            10.0, 10.0, 10.0,
+            10.0, 10.0, 10.0
+        };
+        std::array<float, lowleveltypes::num_motors> tau_lb = {
+            -23.7, -23.7, -45.3,
+            -23.7, -23.7, -45.3,
+            -23.7, -23.7, -45.3,
+            -23.7, -23.7, -45.3
+        };
+        std::array<float, lowleveltypes::num_motors> tau_ub = {
+            23.7, 23.7, 45.3,
+            23.7, 23.7, 45.3,
+            23.7, 23.7, 45.3,
+            23.7, 23.7, 45.3
+        };
+    };
+
 }

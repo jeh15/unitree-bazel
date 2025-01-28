@@ -64,6 +64,7 @@ PYBIND11_MODULE(unitree_api, m) {
     py::class_<MotorController>(m, "MotorController")
         .def(py::init<>())
         .def("init", &MotorController::init)
+        .def("stop_control_thread", &MotorController::stop_control_thread)
         .def("update_command", &MotorController::update_command)
         .def("get_low_state", &MotorController::get_low_state)
         .def("get_imu_state", &MotorController::get_imu_state)
