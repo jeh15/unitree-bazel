@@ -1,0 +1,15 @@
+cc_library(
+    name = "lowlevelapi_types",
+    srcs = ["lowlevelapi_types.h"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "lowlevelapi_cc",
+    srcs = ["lowlevelapi.h"],
+    deps = [
+        ":lowlevelapi_types",
+        "//unitree/unitree_sdk2:lib_unitree",
+    ],
+    visibility = ["//visibility:public"],
+)
