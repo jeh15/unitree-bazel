@@ -1,8 +1,8 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include "lowlevelapi.h"
-#include "lowlevelapi_types.h"
+#include "src/lowlevelapi.h"
+#include "src/lowlevelapi_types.h"
 
 
 namespace py = pybind11;
