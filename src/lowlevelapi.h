@@ -29,7 +29,7 @@ class MotorController {
         
         ~MotorController() {}
 
-        void init(const std::string& network_name) {
+        void initialize(const std::string& network_name) {
             // Initialize Channel:
             ChannelFactory::Instance()->Init(0, network_name);
 
