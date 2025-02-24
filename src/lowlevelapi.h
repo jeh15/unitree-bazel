@@ -25,7 +25,7 @@ using namespace unitree::robot;
 
 class MotorController {
     public:
-        explicit MotorController(uint8_t control_rate = 2): control_rate_ms(control_rate) {}
+        explicit MotorController(int control_rate = 1000): control_rate_us(control_rate) {}
         
         ~MotorController() {}
 
@@ -158,7 +158,7 @@ class MotorController {
         const double PosStopF = (2.146E+9f);
         const double VelStopF = (16000.0f);
         // Control Thread:
-        uint8_t control_rate_ms;
+        uint8_t control_rate_us;
         std::atomic<bool> running{true};
         std::mutex mutex;
         std::thread thread;
@@ -214,8 +214,13 @@ class MotorController {
         }
 
         void control_loop() {
+            using Clock = std::chrono::steady_clock;
+            auto next_execution_time = Clock::now();
             // Thread Loop:
             while(running) {
+                // Calculate next execution time first
+                next_execution_time += std::chrono::microseconds(control_rate_us);
+
                 /* Lock Guard Scope */
                 {   
                     std::lock_guard<std::mutex> lock(mutex);
@@ -239,8 +244,19 @@ class MotorController {
                     // Publish Command:
                     motor_cmd_publisher->Write(motor_cmd);
                 }
-                // Control Rate:
-                std::this_thread::sleep_for(std::chrono::milliseconds(control_rate_ms));
+                // Check for overrun and sleep until next execution time
+                auto now = Clock::now();
+                if (now < next_execution_time) {
+                    std::this_thread::sleep_until(next_execution_time);
+                } 
+                else {
+                    // Log overrun
+                    auto overrun = std::chrono::duration_cast<std::chrono::microseconds>(now - next_execution_time);
+                    std::cout << "Motor Control Loop Execution Time Exceeded Control Rate: " 
+                            << overrun.count() << "us" << std::endl;
+                    // Reset next execution time to prevent cascading delays
+                    next_execution_time = now;
+                }
             }
         }
 };
