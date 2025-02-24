@@ -7,7 +7,7 @@ cc_library(
 )
 
 cc_library(
-    name = "lowlevelapi",
+    name = "unitree_go2_api",
     deps = [
         "//src:lowlevelapi_cc",
         "//src:lowlevelapi_types",
