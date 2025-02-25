@@ -1,8 +1,8 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include "src/lowlevelapi.h"
-#include "src/lowlevelapi_types.h"
+#include "unitree-api/lowlevelapi.h"
+#include "unitree-api/lowlevelapi_types.h"
 
 
 namespace py = pybind11;

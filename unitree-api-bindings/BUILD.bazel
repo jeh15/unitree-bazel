@@ -6,8 +6,8 @@ pybind_library(
     name = "lowlevelapi_cc_library",
     srcs = ["lowlevelapi_py.cc"],
     deps = [
-        "//src:lowlevelapi_cc",
-        "//src:lowlevelapi_types",
+        "//unitree-api:lowlevelapi_cc",
+        "//unitree-api:lowlevelapi_types",
     ],
     alwayslink = True,
     visibility = ["//visibility:public"],

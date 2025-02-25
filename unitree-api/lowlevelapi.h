@@ -14,7 +14,7 @@
 #include <unitree/idl/go2/LowState_.hpp>
 #include <unitree/idl/go2/LowCmd_.hpp>
 
-#include "lowlevelapi_types.h"
+#include "unitree-api/lowlevelapi_types.h"
 
 using namespace unitree::common;
 using namespace unitree::robot;

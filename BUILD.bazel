@@ -9,15 +9,15 @@ cc_library(
 cc_library(
     name = "unitree_go2_api",
     deps = [
-        "//src:lowlevelapi_cc",
-        "//src:lowlevelapi_types",
+        "//unitree-api:lowlevelapi_cc",
+        "//unitree-api:lowlevelapi_types",
     ],
     visibility = ["//visibility:public"],
 )
 
 py_library(
-    name = "unitree_api_library",
-    data = ["//unitree_bindings:unitree_api"],
-    imports = ["//unitree_bindings"],
+    name = "unitree_api_bindings_library",
+    data = ["//unitree-api-bindings:unitree_api"],
+    imports = ["//unitree-api-bindings"],
     visibility = ["//visibility:public"],
 )
