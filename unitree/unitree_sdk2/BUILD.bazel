@@ -8,7 +8,6 @@ link_options = select({
 })
 
 hdrs = glob([
-    "include/*.hpp",
     "include/**/*.hpp",
 ])
 
