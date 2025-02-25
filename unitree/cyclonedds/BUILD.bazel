@@ -13,7 +13,6 @@ dds_hdrs = glob([
 ])
 ddsc_hdrs = glob(["include/ddsc/*.h",])
 ddscxx_hdrs = glob([
-    "include/ddscxx/*.hpp",
     "include/ddscxx/**/*.hpp",
 ])
 
