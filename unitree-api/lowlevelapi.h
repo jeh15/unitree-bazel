@@ -9,6 +9,8 @@
 #include <atomic>
 #include <algorithm>
 
+#include "absl/status/status.h"
+
 #include <unitree/robot/channel/channel_publisher.hpp>
 #include <unitree/robot/channel/channel_subscriber.hpp>
 #include <unitree/idl/go2/LowState_.hpp>
@@ -29,7 +31,7 @@ class MotorController {
         
         ~MotorController() {}
 
-        void initialize(const std::string& network_name) {
+        absl::Status initialize(const std::string& network_name) {
             // Initialize Channel:
             ChannelFactory::Instance()->Init(0, network_name);
 
@@ -43,16 +45,27 @@ class MotorController {
             /*create subscriber*/
             robot_state_subscriber.reset(new ChannelSubscriber<unitree_go::msg::dds_::LowState_>(TOPIC_LOWSTATE));
             robot_state_subscriber->InitChannel(std::bind(&MotorController::robot_state_msg_handler, this, std::placeholders::_1), 1);
+
+            initialized = true
+            return absl::OkStatus();
         }
 
-        void initialize_control_thread() {
-            // Low Level Motor Control Loop:
+        absl::Status initialize_control_thread() {
+            if(!initialized)
+                return absl::FailedPreconditionError("Motor Controller not initialized");
+
             thread = std::thread(&MotorController::control_loop, this);
+            control_thread_initialized = true;
+            return absl::OkStatus();
         }
 
-        void stop_control_thread() {
+        absl::Status stop_control_thread() {
+            if(!initialized || !control_thread_initialized)
+                return absl::FailedPreconditionError("Motor Controller or Control Thread not initialized");
+
             running = false;
             thread.join();
+            return absl::OkStatus();
         }
 
         void update_command(lowleveltypes::MotorCommand& motor_cmd) {
@@ -156,6 +169,9 @@ class MotorController {
             };
         } motor_limits;
         lowleveltypes::MotorCommand motor_commands;
+        // Initialization Flag:
+        bool initialized = false;
+        bool control_thread_initialized = false;
         // Unitree Constants:
         const double PosStopF = (2.146E+9f);
         const double VelStopF = (16000.0f);

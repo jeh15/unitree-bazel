@@ -9,8 +9,14 @@ module(
 # Platforms:
 bazel_dep(name = "platforms", version = "0.0.10")
 
+# cc rules:
+bazel_dep(name = "rules_cc", version = "0.0.2")
+
 # Python Rules:
 bazel_dep(name = "rules_python", version = "1.0.0")
+
+# Abseil Cpp:
+bazel_dep(name = "abseil-cpp", version = "20250127.0")
 
 # Pybind11:
 bazel_dep(name = "pybind11_bazel", version = "2.13.6")

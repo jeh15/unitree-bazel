@@ -1,6 +1,6 @@
 load("@pybind11_bazel//:build_defs.bzl", "pybind_extension", "pybind_library")
 load("@rules_python//python:defs.bzl", "py_library")
-load("@rules_python//python:packaging.bzl", "py_package", "py_wheel", "py_wheel_dist")
+load("@rules_python//python:packaging.bzl", "py_package", "py_wheel")
 
 pybind_library(
     name = "lowlevelapi_cc_library",

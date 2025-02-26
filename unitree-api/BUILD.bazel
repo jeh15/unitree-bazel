@@ -1,3 +1,5 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
 cc_library(
     name = "lowlevelapi_types",
     srcs = ["lowlevelapi_types.h"],
@@ -10,6 +12,7 @@ cc_library(
     deps = [
         ":lowlevelapi_types",
         "//unitree/unitree_sdk2:lib_unitree",
+        "@abseil-cpp//absl/status:status",
     ],
     visibility = ["//visibility:public"],
 )
