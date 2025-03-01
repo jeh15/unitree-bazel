@@ -27,10 +27,10 @@ using namespace unitree::robot;
 
 class UnitreeDriver {
     public:
-        explicit UnitreeDriver(int control_rate = 1000): control_rate_us(control_rate) {}
+        explicit UnitreeDriver(const std::string network, int control_rate = 1000): network_name(network), control_rate_us(control_rate) {}
         ~UnitreeDriver() {}
 
-        absl::Status initialize(const std::string& network_name) {
+        absl::Status initialize() {
             // Initialize Channel:
             ChannelFactory::Instance()->Init(0, network_name);
 
@@ -121,6 +121,10 @@ class UnitreeDriver {
                 motor_state.torque_estimate[value] = robot_state.motor_state()[value].tau_est();
             }
             return motor_state;
+        }
+
+        int get_control_rate() {
+            return control_rate_us;
         }
 
         bool is_initialized() {
