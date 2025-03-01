@@ -25,11 +25,10 @@ using namespace unitree::robot;
 #define TOPIC_LOWSTATE "rt/lowstate"
 
 
-class MotorController {
+class UnitreeDriver {
     public:
-        explicit MotorController(int control_rate = 1000): control_rate_us(control_rate) {}
-        
-        ~MotorController() {}
+        explicit UnitreeDriver(int control_rate = 1000): control_rate_us(control_rate) {}
+        ~UnitreeDriver() {}
 
         absl::Status initialize(const std::string& network_name) {
             // Initialize Channel:
@@ -44,7 +43,7 @@ class MotorController {
 
             /*create subscriber*/
             robot_state_subscriber.reset(new ChannelSubscriber<unitree_go::msg::dds_::LowState_>(TOPIC_LOWSTATE));
-            robot_state_subscriber->InitChannel(std::bind(&MotorController::robot_state_msg_handler, this, std::placeholders::_1), 1);
+            robot_state_subscriber->InitChannel(std::bind(&UnitreeDriver::robot_state_msg_handler, this, std::placeholders::_1), 1);
 
             initialized = true;
             return absl::OkStatus();
@@ -54,7 +53,7 @@ class MotorController {
             if(!initialized)
                 return absl::FailedPreconditionError("Motor Controller not initialized");
 
-            thread = std::thread(&MotorController::control_loop, this);
+            thread = std::thread(&UnitreeDriver::control_loop, this);
             control_thread_initialized = true;
             return absl::OkStatus();
         }
@@ -77,15 +76,11 @@ class MotorController {
                 float torque_feedforward = std::clamp(motor_cmd.torque_feedforward[value], motor_limits.tau_lb[value], motor_limits.tau_ub[value]);
                 float stiffness = std::clamp(motor_cmd.stiffness[value], 0.0f, 100.0f);
                 float damping = std::clamp(motor_cmd.damping[value], 0.0f, 100.0f);
-                float kp = std::clamp(motor_cmd.kp[value], 0.0f, 100.0f);
-                float kd = std::clamp(motor_cmd.kd[value], 0.0f, 100.0f);
                 motor_commands.q_setpoint[value] = q_setpoint;
                 motor_commands.qd_setpoint[value] = qd_setpoint; 
                 motor_commands.torque_feedforward[value] = torque_feedforward;
                 motor_commands.stiffness[value] = stiffness;
                 motor_commands.damping[value] = damping;
-                motor_commands.kp[value] = kp;
-                motor_commands.kd[value] = kd;
             }
         }
 
@@ -126,6 +121,14 @@ class MotorController {
                 motor_state.torque_estimate[value] = robot_state.motor_state()[value].tau_est();
             }
             return motor_state;
+        }
+
+        bool is_initialized() {
+            return initialized;
+        }
+
+        bool is_control_thread_initialized() {
+            return control_thread_initialized;
         }
     
     private:
@@ -247,13 +250,11 @@ class MotorController {
                         float q_error = motor_commands.q_setpoint[value] - robot_state.motor_state()[value].q();
                         float qd_error = motor_commands.qd_setpoint[value] - robot_state.motor_state()[value].dq();
                         float torque_feedforward = std::clamp(motor_commands.torque_feedforward[value], motor_limits.tau_lb[value], motor_limits.tau_ub[value]);
-                        float torque_input = torque_feedforward + motor_commands.kp[value] * (q_error) + motor_commands.kd[value] * (qd_error);
-                        float torque_cmd = std::clamp(torque_input, motor_limits.tau_lb[value], motor_limits.tau_ub[value]);
                         motor_cmd.motor_cmd()[value].q() = motor_commands.q_setpoint[value];
                         motor_cmd.motor_cmd()[value].dq() = motor_commands.qd_setpoint[value];
                         motor_cmd.motor_cmd()[value].kp() = motor_commands.stiffness[value];
                         motor_cmd.motor_cmd()[value].kd() = motor_commands.damping[value];
-                        motor_cmd.motor_cmd()[value].tau() = torque_cmd;
+                        motor_cmd.motor_cmd()[value].tau() = torque_feedforward ;
                     }
 
                     // Checksum:
