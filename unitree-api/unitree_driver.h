@@ -16,10 +16,11 @@
 #include <unitree/idl/go2/LowState_.hpp>
 #include <unitree/idl/go2/LowCmd_.hpp>
 
-#include "unitree-api/lowlevelapi_types.h"
+#include "unitree-api/containers.h"
 
 using namespace unitree::common;
 using namespace unitree::robot;
+using namespace unitree::containers;
 
 #define TOPIC_LOWCMD "rt/lowcmd"
 #define TOPIC_LOWSTATE "rt/lowstate"
@@ -27,7 +28,7 @@ using namespace unitree::robot;
 
 class UnitreeDriver {
     public:
-        explicit UnitreeDriver(const std::string network, int control_rate = 1000): network_name(network), control_rate_us(control_rate) {}
+        explicit UnitreeDriver(const std::string network_name, int control_rate = 1000): network_name(network_name), control_rate_us(control_rate) {}
         ~UnitreeDriver() {}
 
         absl::Status initialize() {
@@ -67,10 +68,10 @@ class UnitreeDriver {
             return absl::OkStatus();
         }
 
-        void update_command(lowleveltypes::MotorCommand& motor_cmd) {
+        void update_command(MotorCommand& motor_cmd) {
             std::lock_guard<std::mutex> lock(mutex);
             // Iterate over motors and update motor command:
-            for(const auto& [key, value] : lowleveltypes::MotorID) {
+            for(const auto& [key, value] : MotorID) {
                 float q_setpoint = std::clamp(motor_cmd.q_setpoint[value], motor_limits.q_lb[value], motor_limits.q_ub[value]);
                 float qd_setpoint = std::clamp(motor_cmd.qd_setpoint[value], motor_limits.qd_lb[value], motor_limits.qd_ub[value]);
                 float torque_feedforward = std::clamp(motor_cmd.torque_feedforward[value], motor_limits.tau_lb[value], motor_limits.tau_ub[value]);
@@ -84,8 +85,8 @@ class UnitreeDriver {
             }
         }
 
-        lowleveltypes::LowState get_low_state() {
-            lowleveltypes::LowState low_state;
+        LowState get_low_state() {
+            LowState low_state;
             for (int i = 0; i < 4; i++) {
                 low_state.foot_force[i] = robot_state.foot_force()[i];
             }
@@ -94,8 +95,8 @@ class UnitreeDriver {
             return low_state;
         }
 
-        lowleveltypes::IMUState get_imu_state() {
-            lowleveltypes::IMUState imu_state;
+        IMUState get_imu_state() {
+            IMUState imu_state;
             for (int i = 0; i < 4; i++) {
                 imu_state.quaternion[i] = robot_state.imu_state().quaternion()[i];
             }
@@ -112,9 +113,9 @@ class UnitreeDriver {
             return imu_state;
         }
 
-        lowleveltypes::MotorState get_motor_state() {
-            lowleveltypes::MotorState motor_state;
-            for(const auto& [key, value] : lowleveltypes::MotorID) {
+        MotorState get_motor_state() {
+            MotorState motor_state;
+            for(const auto& [key, value] : MotorID) {
                 motor_state.q[value] = robot_state.motor_state()[value].q();
                 motor_state.qd[value] = robot_state.motor_state()[value].dq();
                 motor_state.qdd[value] = robot_state.motor_state()[value].ddq();
@@ -138,61 +139,61 @@ class UnitreeDriver {
     private:
         // Motor Structs:
         const struct {
-            std::array<float, lowleveltypes::num_motors> q_lb = {
+            std::array<float, num_motors> q_lb = {
                 -1.0472, -1.5708, -2.7227,
                 -1.0472, -1.5708, -2.7227,
                 -1.0472, -0.5236, -2.7227,
                 -1.0472, -0.5236, -2.7227
             };
-            std::array<float, lowleveltypes::num_motors> q_ub = {
+            std::array<float, num_motors> q_ub = {
                 1.0472, 3.4907, -0.83776,
                 1.0472, 3.4907, -0.83776,
                 1.0472, 4.5379, -0.83776,
                 1.0472, 4.5379, -0.83776,
             };
-            std::array<float, lowleveltypes::num_motors> qd_lb = {
+            std::array<float, num_motors> qd_lb = {
                 -10.0, -10.0, -10.0,
                 -10.0, -10.0, -10.0,
                 -10.0, -10.0, -10.0,
                 -10.0, -10.0, -10.0
             };
-            std::array<float, lowleveltypes::num_motors> qd_ub = {
+            std::array<float, num_motors> qd_ub = {
                 10.0, 10.0, 10.0,
                 10.0, 10.0, 10.0,
                 10.0, 10.0, 10.0,
                 10.0, 10.0, 10.0
             };
-            std::array<float, lowleveltypes::num_motors> tau_lb = {
+            std::array<float, num_motors> tau_lb = {
                 -23.7, -23.7, -45.3,
                 -23.7, -23.7, -45.3,
                 -23.7, -23.7, -45.3,
                 -23.7, -23.7, -45.3
             };
-            std::array<float, lowleveltypes::num_motors> tau_ub = {
+            std::array<float, num_motors> tau_ub = {
                 23.7, 23.7, 45.3,
                 23.7, 23.7, 45.3,
                 23.7, 23.7, 45.3,
                 23.7, 23.7, 45.3
             };
         } motor_limits;
-        lowleveltypes::MotorCommand motor_commands;
+        MotorCommand motor_commands;
         // Initialization Flag:
         bool initialized = false;
         bool control_thread_initialized = false;
         // Unitree Constants:
         const double PosStopF = (2.146E+9f);
         const double VelStopF = (16000.0f);
-        // Control Thread:
-        uint8_t control_rate_us;
-        std::atomic<bool> running{true};
-        std::mutex mutex;
-        std::thread thread;
         // Communication and Messages:
         std::string network_name;
         unitree_go::msg::dds_::LowCmd_ motor_cmd{};
         unitree_go::msg::dds_::LowState_ robot_state{};
         ChannelPublisherPtr<unitree_go::msg::dds_::LowCmd_> motor_cmd_publisher;
         ChannelSubscriberPtr<unitree_go::msg::dds_::LowState_> robot_state_subscriber;
+        // Control Thread:
+        uint8_t control_rate_us;
+        std::atomic<bool> running{true};
+        std::mutex mutex;
+        std::thread thread;
 
         uint32_t crc32_core(uint32_t* ptr, uint32_t len) {
             unsigned int xbit = 0;
@@ -250,9 +251,7 @@ class UnitreeDriver {
                 {   
                     std::lock_guard<std::mutex> lock(mutex);
                     // Iterate over motors:
-                    for(const auto& [key, value] : lowleveltypes::MotorID) {
-                        float q_error = motor_commands.q_setpoint[value] - robot_state.motor_state()[value].q();
-                        float qd_error = motor_commands.qd_setpoint[value] - robot_state.motor_state()[value].dq();
+                    for(const auto& [key, value] : MotorID) {
                         float torque_feedforward = std::clamp(motor_commands.torque_feedforward[value], motor_limits.tau_lb[value], motor_limits.tau_ub[value]);
                         motor_cmd.motor_cmd()[value].q() = motor_commands.q_setpoint[value];
                         motor_cmd.motor_cmd()[value].dq() = motor_commands.qd_setpoint[value];

@@ -1,16 +1,17 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
 cc_library(
-    name = "lowlevelapi_types",
-    srcs = ["lowlevelapi_types.h"],
+    name = "containers",
+    srcs = ["containers.h"],
+    alwayslink = True,
     visibility = ["//visibility:public"],
 )
 
 cc_library(
-    name = "lowlevelapi_cc",
-    srcs = ["lowlevelapi.h"],
+    name = "unitree_driver",
+    srcs = ["unitree_driver.h"],
     deps = [
-        ":lowlevelapi_types",
+        ":containers",
         "//unitree/unitree_sdk2:lib_unitree",
         "@abseil-cpp//absl/status:status",
     ],

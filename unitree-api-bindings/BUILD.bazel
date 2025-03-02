@@ -3,11 +3,11 @@ load("@rules_python//python:defs.bzl", "py_library")
 load("@rules_python//python:packaging.bzl", "py_package", "py_wheel")
 
 pybind_library(
-    name = "lowlevelapi_cc_library",
-    srcs = ["lowlevelapi_py.cc"],
+    name = "unitree_driver_cc_library",
+    srcs = ["unitree_driver_py.cc"],
     deps = [
-        "//unitree-api:lowlevelapi_cc",
-        "//unitree-api:lowlevelapi_types",
+        "//unitree-api:unitree_driver",
+        "//unitree-api:containers",
     ],
     alwayslink = True,
     visibility = ["//visibility:public"],
@@ -15,7 +15,7 @@ pybind_library(
 
 pybind_extension(
     name = "unitree_api",
-    deps = [":lowlevelapi_cc_library"],
+    deps = [":unitree_driver_cc_library"],
     visibility = ["//visibility:public"],
 )
 
