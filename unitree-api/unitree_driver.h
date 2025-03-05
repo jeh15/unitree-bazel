@@ -50,17 +50,17 @@ class UnitreeDriver {
             return absl::OkStatus();
         }
 
-        absl::Status initialize_control_thread() {
+        absl::Status initialize_thread() {
             if(!initialized)
                 return absl::FailedPreconditionError("Motor Controller not initialized");
 
             thread = std::thread(&UnitreeDriver::control_loop, this);
-            control_thread_initialized = true;
+            thread_initialized = true;
             return absl::OkStatus();
         }
 
-        absl::Status stop_control_thread() {
-            if(!initialized || !control_thread_initialized)
+        absl::Status stop_thread() {
+            if(!initialized || !thread_initialized)
                 return absl::FailedPreconditionError("Motor Controller or Control Thread not initialized");
 
             running = false;
@@ -132,8 +132,8 @@ class UnitreeDriver {
             return initialized;
         }
 
-        bool is_control_thread_initialized() {
-            return control_thread_initialized;
+        bool is_thread_initialized() {
+            return thread_initialized;
         }
     
     private:
@@ -179,7 +179,7 @@ class UnitreeDriver {
         MotorCommand motor_commands;
         // Initialization Flag:
         bool initialized = false;
-        bool control_thread_initialized = false;
+        bool thread_initialized = false;
         // Unitree Constants:
         const double PosStopF = (2.146E+9f);
         const double VelStopF = (16000.0f);
