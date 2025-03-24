@@ -8,6 +8,8 @@ pybind_library(
     deps = [
         "//unitree-api:unitree_driver",
         "//unitree-api:containers",
+        "@pybind11_abseil//pybind11_abseil:absl_casters",
+        "@pybind11_abseil//pybind11_abseil:status_caster",
     ],
     alwayslink = True,
     visibility = ["//visibility:public"],

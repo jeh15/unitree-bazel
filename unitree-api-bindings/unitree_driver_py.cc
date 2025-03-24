@@ -1,5 +1,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include "pybind11_abseil/absl_casters.h"
+#include "pybind11_abseil/status_caster.h"
 
 #include "unitree-api/unitree_driver.h"
 #include "unitree-api/containers.h"
