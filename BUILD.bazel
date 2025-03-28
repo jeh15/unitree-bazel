@@ -18,7 +18,7 @@ cc_library(
 
 py_library(
     name = "unitree_api_bindings",
-    data = ["//unitree-api-bindings:unitree_api"],
-    imports = ["//unitree-api-bindings"],
+    data = ["//unitree_api_bindings:unitree_api"],
+    imports = ["//unitree_api_bindings"],
     visibility = ["//visibility:public"],
 )
