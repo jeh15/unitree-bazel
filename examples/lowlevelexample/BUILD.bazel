@@ -1,6 +1,0 @@
-cc_binary(
-    name = "main",
-    srcs = ["main.cc"],
-    deps = ["//unitree/unitree_sdk2:lib_unitree"],
-    visibility = ["//visibility:public"],
-)

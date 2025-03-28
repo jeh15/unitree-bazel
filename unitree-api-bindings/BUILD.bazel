@@ -46,7 +46,7 @@ py_wheel(
     description_file = ":description.md",
     python_requires = ">=3.12",
     python_tag = "py3",
-    version = "0.0.7",
+    version = "0.0.8",
     deps = [
         ":unitree_pkg",
     ],

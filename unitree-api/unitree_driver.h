@@ -28,7 +28,7 @@ using namespace unitree::containers;
 
 class UnitreeDriver {
     public:
-        explicit UnitreeDriver(const std::string network_name, int control_rate = 1000): network_name(network_name), control_rate_us(control_rate) {}
+        explicit UnitreeDriver(const std::string network_name, int control_rate_us = 2000): network_name(network_name), control_rate_us(control_rate_us) {}
         ~UnitreeDriver() {}
 
         absl::Status initialize() {

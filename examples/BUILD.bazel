@@ -1,0 +1,13 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
+cc_binary(
+    name = "main",
+    srcs = ["main.cc"],
+    deps = [
+        "//unitree-api:unitree_driver",
+        "//unitree-api:containers",
+        "@abseil-cpp//absl/status:status",
+        "@abseil-cpp//absl/log:absl_check",
+    ],
+    visibility = ["//visibility:public"],
+)
