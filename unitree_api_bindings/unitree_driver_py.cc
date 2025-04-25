@@ -2,6 +2,7 @@
 #include <pybind11/stl.h>
 #include "pybind11_abseil/absl_casters.h"
 #include "pybind11_abseil/status_caster.h"
+#include "pybind11_abseil/import_status_module.h"
 
 #include "unitree-api/unitree_driver.h"
 #include "unitree-api/containers.h"
@@ -12,6 +13,8 @@ using namespace pybind11::literals;
 
 
 PYBIND11_MODULE(unitree_api, m) {
+    py::google::ImportStatusModule();
+
     m.doc() = "Unitree API bindings";
 
     py::class_<unitree::containers::LowState>(m, "LowState")

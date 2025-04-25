@@ -10,6 +10,7 @@ pybind_library(
         "//unitree-api:containers",
         "@pybind11_abseil//pybind11_abseil:absl_casters",
         "@pybind11_abseil//pybind11_abseil:status_caster",
+        "@pybind11_abseil//pybind11_abseil:import_status_module",
     ],
     alwayslink = True,
     visibility = ["//visibility:public"],
@@ -46,7 +47,7 @@ py_wheel(
     description_file = ":description.md",
     python_requires = ">=3.12",
     python_tag = "py3",
-    version = "0.0.9",
+    version = "0.0.11",
     deps = [
         ":unitree_pkg",
     ],
