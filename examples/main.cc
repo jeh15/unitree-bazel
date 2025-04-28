@@ -16,11 +16,14 @@ int main(int argc, char** argv) {
     absl::Status result;
 
     // Initialize Unitree Driver:
-    std::string network_name = "eno0"; // Follow the official Unitree SDK guide to figure out the network name.
+    std::string network_name = "eno2"; // Follow the official Unitree SDK guide to figure out the network name.
     int control_rate_us = 2000;   // Control rate of inner control loop in microseconds.
     UnitreeDriver unitree_driver(network_name, control_rate_us);
     result.Update(unitree_driver.initialize());
     ABSL_CHECK(result.ok()) << result.message();
+
+    // Sleep for 1 second to allow the robot to initialize:
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 
     // Test reading low, imu, and motor states:
     LowState low_state = unitree_driver.get_low_state();

@@ -71,18 +71,18 @@ class UnitreeDriver {
         void update_command(MotorCommand& new_command) {
             std::lock_guard<std::mutex> lock(mutex);
             // Iterate over motors and update motor command:
-            for(const auto& [key, value] : MotorID) {
-                motor_commands.q_setpoint[value] = std::clamp(new_command.q_setpoint[value], motor_limits.q_lb[value], motor_limits.q_ub[value]);
-                motor_commands.qd_setpoint[value] = std::clamp(new_command.qd_setpoint[value], motor_limits.qd_lb[value], motor_limits.qd_ub[value]);
-                motor_commands.torque_feedforward[value] = std::clamp(new_command.torque_feedforward[value], motor_limits.tau_lb[value], motor_limits.tau_ub[value]);
-                motor_commands.stiffness[value] = std::clamp(new_command.stiffness[value], 0.0f, 100.0f);
-                motor_commands.damping[value] = std::clamp(new_command.damping[value], 0.0f, 100.0f);
+            for(size_t i = 0; i < num_motors; ++i) {
+                motor_commands.q_setpoint[i] = std::clamp(new_command.q_setpoint[i], motor_limits.q_lb[i], motor_limits.q_ub[i]);
+                motor_commands.qd_setpoint[i] = std::clamp(new_command.qd_setpoint[i], motor_limits.qd_lb[i], motor_limits.qd_ub[i]);
+                motor_commands.torque_feedforward[i] = std::clamp(new_command.torque_feedforward[i], motor_limits.tau_lb[i], motor_limits.tau_ub[i]);
+                motor_commands.stiffness[i] = std::clamp(new_command.stiffness[i], 0.0f, 100.0f);
+                motor_commands.damping[i] = std::clamp(new_command.damping[i], 0.0f, 100.0f);
             }
         }
 
         LowState get_low_state() {
             LowState low_state;
-            for (int i = 0; i < 4; i++) {
+            for (size_t i = 0; i < 4; ++i) {
                 low_state.foot_force[i] = robot_state.foot_force()[i];
             }
             /* C++20 Required */
@@ -92,10 +92,10 @@ class UnitreeDriver {
 
         IMUState get_imu_state() {
             IMUState imu_state;
-            for (int i = 0; i < 4; i++) {
+            for (size_t i = 0; i < 4; ++i) {
                 imu_state.quaternion[i] = robot_state.imu_state().quaternion()[i];
             }
-            for (int i = 0; i < 3; i++) {
+            for (size_t i = 0; i < 3; ++i) {
                 imu_state.gyroscope[i] = robot_state.imu_state().gyroscope()[i];
                 imu_state.accelerometer[i] = robot_state.imu_state().accelerometer()[i];
                 imu_state.rpy[i] = robot_state.imu_state().rpy()[i];
@@ -110,11 +110,11 @@ class UnitreeDriver {
 
         MotorState get_motor_state() {
             MotorState motor_state;
-            for(const auto& [key, value] : MotorID) {
-                motor_state.q[value] = robot_state.motor_state()[value].q();
-                motor_state.qd[value] = robot_state.motor_state()[value].dq();
-                motor_state.qdd[value] = robot_state.motor_state()[value].ddq();
-                motor_state.torque_estimate[value] = robot_state.motor_state()[value].tau_est();
+            for(size_t i = 0; i < num_motors; ++i) {
+                motor_state.q[i] = robot_state.motor_state()[i].q();
+                motor_state.qd[i] = robot_state.motor_state()[i].dq();
+                motor_state.qdd[i] = robot_state.motor_state()[i].ddq();
+                motor_state.torque_estimate[i] = robot_state.motor_state()[i].tau_est();
             }
             return motor_state;
         }
@@ -189,32 +189,6 @@ class UnitreeDriver {
         std::atomic<bool> running{true};
         std::mutex mutex;
         std::thread thread;
-
-        // Bitwise CRC32 Calculation:
-        // uint32_t crc32_core(uint32_t* ptr, uint32_t len) {
-        //     unsigned int xbit = 0;
-        //     unsigned int data = 0;
-        //     unsigned int CRC32 = 0xFFFFFFFF;
-        //     const unsigned int dwPolynomial = 0x04c11db7;
-        //     for (unsigned int i = 0; i < len; i++) {
-        //         xbit = 1 << 31;
-        //         data = ptr[i];
-        //         for (unsigned int bits = 0; bits < 32; bits++) {
-        //             if (CRC32 & 0x80000000) {
-        //                 CRC32 <<= 1;
-        //                 CRC32 ^= dwPolynomial;
-        //             }
-        //             else {
-        //                 CRC32 <<= 1;
-        //             }
-
-        //             if (data & xbit)
-        //                 CRC32 ^= dwPolynomial;
-        //             xbit >>= 1;
-        //         }
-        //     }
-        //     return CRC32;
-        // }
         
         // Table Look Up CRC32 Calculation:
         uint32_t crc32_core(const uint32_t* ptr, uint32_t len) {
@@ -255,13 +229,15 @@ class UnitreeDriver {
             };
             
             uint32_t crc = 0xFFFFFFFF;
-            const uint8_t* byteBuf = reinterpret_cast<const uint8_t*>(ptr);
-            uint32_t length = len * 4;
-            
-            for (uint32_t i = 0; i < length; i++) {
-                crc = (crc << 8) ^ crc_table[((crc >> 24) & 0xFF) ^ byteBuf[i]];
+
+            for (uint32_t i = 0; i < len; ++i) {
+                uint32_t data = ptr[i];
+                for (int j = 0; j < 4; ++j) {
+                    uint8_t byte = (data >> (24 - j * 8)) & 0xFF;
+                    crc = (crc << 8) ^ crc_table[(crc >> 24) ^ byte];
+                }
             }
-            
+ 
             return crc;
         }
 
@@ -270,7 +246,7 @@ class UnitreeDriver {
             motor_cmd.head()[1] = 0xEF;
             motor_cmd.level_flag() = 0xFF;
             motor_cmd.gpio() = 0;
-            for(int i=0; i<20; i++) {
+            for(int i=0; i<20; ++i) {
                 motor_cmd.motor_cmd()[i].mode() = (0x01);
                 motor_cmd.motor_cmd()[i].q() = (PosStopF);
                 motor_cmd.motor_cmd()[i].kp() = (0);
@@ -287,6 +263,8 @@ class UnitreeDriver {
         void control_loop() {
             using Clock = std::chrono::steady_clock;
             auto next_time = Clock::now();
+            size_t consecutive_overruns = 0;
+
             // Thread Loop:
             while(running) {
                 // Calculate next execution time first
@@ -296,13 +274,14 @@ class UnitreeDriver {
                 {   
                     std::lock_guard<std::mutex> lock(mutex);
                     // Iterate over motors:
-                    for(const auto& [key, value] : MotorID) {
-                        motor_cmd.motor_cmd()[value].q() = motor_commands.q_setpoint[value];
-                        motor_cmd.motor_cmd()[value].dq() = motor_commands.qd_setpoint[value];
-                        motor_cmd.motor_cmd()[value].kp() = motor_commands.stiffness[value];
-                        motor_cmd.motor_cmd()[value].kd() = motor_commands.damping[value];
-                        motor_cmd.motor_cmd()[value].tau() = motor_commands.torque_feedforward[value];
+                    for(size_t i = 0; i < num_motors; ++i) {
+                        motor_cmd.motor_cmd()[i].q() = motor_commands.q_setpoint[i];
+                        motor_cmd.motor_cmd()[i].dq() = motor_commands.qd_setpoint[i];
+                        motor_cmd.motor_cmd()[i].kp() = motor_commands.stiffness[i];
+                        motor_cmd.motor_cmd()[i].kd() = motor_commands.damping[i];
+                        motor_cmd.motor_cmd()[i].tau() = motor_commands.torque_feedforward[i];
                     }
+                
                 }
 
                 // Checksum:
@@ -311,17 +290,21 @@ class UnitreeDriver {
                 // Publish Command:
                 motor_cmd_publisher->Write(motor_cmd);
 
+
                 // Check for overrun and sleep until next execution time
                 auto now = Clock::now();
                 if (now < next_time) {
                     std::this_thread::sleep_until(next_time);
+                    consecutive_overruns = 0;
                 } 
                 else {
-                    // Log overrun
-                    auto overrun = std::chrono::duration_cast<std::chrono::microseconds>(now - next_time);
-                    std::cout << "Motor Control Loop Execution Time Exceeded Control Rate: " 
-                            << overrun.count() << "us" << std::endl;
-                    // Reset next execution time to prevent cascading delays
+                    // Log overrun after 10 consecutive overruns
+                    consecutive_overruns++;
+                    if (consecutive_overruns >= 10) {
+                        auto overrun = std::chrono::duration_cast<std::chrono::microseconds>(now - next_time);
+                        std::cout << "Motor Control Loop Execution Time Exceeded Control Rate: " 
+                                << overrun.count() << "us" << std::endl;
+                    }
                     next_time = now;
                 }
             }
