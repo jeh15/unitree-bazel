@@ -288,15 +288,3 @@ cython_debug/
 # Pickle:
 *.pkl
 *.pickle
-
-# Keep Unitree SDK and CycloneDDS Binary
-!unitree/unitree_sdk2/lib/aarch64/libunitree_sdk2.a
-!unitree/unitree_sdk2/lib/x86_64/libunitree_sdk2.a
-!unitree/cyclonedds/lib/aarch64/libddsc.so
-!unitree/cyclonedds/lib/aarch64/libddsc.so.0
-!unitree/cyclonedds/lib/aarch64/libddscxx.so
-!unitree/cyclonedds/lib/aarch64/libddscxx.so.0
-!unitree/cyclonedds/lib/x86_64/libddsc.so
-!unitree/cyclonedds/lib/x86_64/libddsc.so.0
-!unitree/cyclonedds/lib/x86_64/libddscxx.so
-!unitree/cyclonedds/lib/x86_64/libddscxx.so.0
