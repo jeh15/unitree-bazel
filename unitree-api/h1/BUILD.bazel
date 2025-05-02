@@ -1,0 +1,19 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "containers",
+    srcs = ["containers.h"],
+    alwayslink = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "unitree_driver",
+    srcs = ["unitree_driver.h"],
+    deps = [
+        ":containers",
+        "//unitree/unitree_sdk2:lib_unitree",
+        "@abseil-cpp//absl/status:status",
+    ],
+    visibility = ["//visibility:public"],
+)

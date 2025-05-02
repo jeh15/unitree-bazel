@@ -511,7 +511,7 @@ dds::sub::detail::DataReader<T>::common_constructor(
 }
 
 template <typename T>
-dds::sub::detail::DataReader<T>::~DataReader()
+dds::sub::detail::DataReader<T>::~DataReader<T>()
 {
     if (!this->closed) {
         try {

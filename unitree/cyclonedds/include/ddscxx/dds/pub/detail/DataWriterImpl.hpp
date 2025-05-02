@@ -400,7 +400,7 @@ dds::pub::detail::DataWriter<T>::DataWriter(
 }
 
 template <typename T>
-dds::pub::detail::DataWriter<T>::~DataWriter()
+dds::pub::detail::DataWriter<T>::~DataWriter<T>()
 {
     if (!this->closed) {
         try {
