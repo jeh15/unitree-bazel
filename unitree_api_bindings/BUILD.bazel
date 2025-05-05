@@ -39,15 +39,20 @@ exports_files(
     visibility = ["//visibility:public"],
 )
 
+"""
+    Publishing Command:
+    TWINE_USERNAME=__token__ TWINE_PASSWORD=pypi-*** \\
+        bazel run --config=opt --stamp --embed_label=0.0.0 //unitree_api_bindings:unitree_go2_api.publish
+"""
 py_wheel(
     name = "unitree_go2_api",
     twine = "@publish_deps//twine",
     distribution = "unitree_go2_api",
     summary = "Custom python bindings for the Unitree Go2 robot.",
     description_file = ":description.md",
-    python_requires = ">=3.12",
+    python_requires = ">=3.13",
     python_tag = "py3",
-    version = "0.0.13",
+    version = "0.0.15",
     deps = [
         ":unitree_pkg",
     ],

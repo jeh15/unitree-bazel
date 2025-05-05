@@ -55,7 +55,7 @@ def main(argv=None):
         motor_commands.stiffness = [60.0 * ratio] * 12
         motor_commands.damping = [5.0 * ratio] * 12
 
-        unitree_driver.update(motor_commands)
+        unitree_driver.update_command(motor_commands)
         time.sleep(sleep_time)
 
     unitree_driver.stop_thread()
