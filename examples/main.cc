@@ -5,8 +5,8 @@
 #include "absl/status/status.h"
 #include "absl/log/absl_check.h"
 
-#include "unitree-api/unitree_driver.h"
-#include "unitree-api/containers.h"
+#include "unitree-api/go2/unitree_driver.h"
+#include "unitree-api/go2/containers.h"
 
 using namespace unitree::containers;
 
@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
     absl::Status result;
 
     // Initialize Unitree Driver:
-    std::string network_name = "eno2"; // Follow the official Unitree SDK guide to figure out the network name.
+    std::string network_name = "enx7cc2c647de4f"; // Follow the official Unitree SDK guide to figure out the network name.
     int control_rate_us = 2000;   // Control rate of inner control loop in microseconds.
     UnitreeDriver unitree_driver(network_name, control_rate_us);
     result.Update(unitree_driver.initialize());

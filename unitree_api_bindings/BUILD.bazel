@@ -6,8 +6,8 @@ pybind_library(
     name = "unitree_driver_cc_library",
     srcs = ["unitree_driver_py.cc"],
     deps = [
-        "//unitree-api:unitree_driver",
-        "//unitree-api:containers",
+        "//unitree-api/go2:unitree_driver",
+        "//unitree-api/go2:containers",
         "@pybind11_abseil//pybind11_abseil:absl_casters",
         "@pybind11_abseil//pybind11_abseil:status_caster",
         "@pybind11_abseil//pybind11_abseil:import_status_module",
@@ -47,7 +47,7 @@ py_wheel(
     description_file = ":description.md",
     python_requires = ">=3.12",
     python_tag = "py3",
-    version = "0.0.12",
+    version = "0.0.13",
     deps = [
         ":unitree_pkg",
     ],

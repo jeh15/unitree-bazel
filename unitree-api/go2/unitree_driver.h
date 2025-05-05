@@ -16,7 +16,7 @@
 #include <unitree/idl/go2/LowState_.hpp>
 #include <unitree/idl/go2/LowCmd_.hpp>
 
-#include "unitree-api/containers.h"
+#include "unitree-api/go2/containers.h"
 
 using namespace unitree::common;
 using namespace unitree::robot;

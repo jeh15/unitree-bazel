@@ -4,8 +4,8 @@
 #include "pybind11_abseil/status_caster.h"
 #include "pybind11_abseil/import_status_module.h"
 
-#include "unitree-api/unitree_driver.h"
-#include "unitree-api/containers.h"
+#include "unitree-api/go2/unitree_driver.h"
+#include "unitree-api/go2/containers.h"
 
 
 namespace py = pybind11;
@@ -72,5 +72,8 @@ PYBIND11_MODULE(unitree_api, m) {
         .def("update_command", &UnitreeDriver::update_command)
         .def("get_low_state", &UnitreeDriver::get_low_state)
         .def("get_imu_state", &UnitreeDriver::get_imu_state)
-        .def("get_motor_state", &UnitreeDriver::get_motor_state);
+        .def("get_motor_state", &UnitreeDriver::get_motor_state)
+        .def("get_control_rate", &UnitreeDriver::get_control_rate)
+        .def("is_initialized", &UnitreeDriver::is_initialized)
+        .def("is_thread_initialized", &UnitreeDriver::is_thread_initialized);
 }
