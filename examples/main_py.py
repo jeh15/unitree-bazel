@@ -3,7 +3,6 @@ import time
 import unitree_api
 
 
-
 def main(argv=None):
     # Initialize Unitree Driver:
     network_name = "enx7cc2c647de4f"
