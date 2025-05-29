@@ -287,9 +287,10 @@ class UnitreeDriver {
 
                 // Checksum:
                 uint32_t crc = crc32_core((uint32_t *)&motor_cmd, (sizeof(unitree_go::msg::dds_::LowCmd_)>>2)-1);
+                
+                // Publish Command if CRC has changed:
                 if (crc != previous_crc) {
                     motor_cmd.crc() = crc;
-                    // Publish Command:
                     motor_cmd_publisher->Write(motor_cmd);
 
                     std::cout << "Changed CRC" << std::endl;
