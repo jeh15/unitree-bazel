@@ -236,7 +236,7 @@ class UnitreeDriver {
         }
 
         void robot_state_msg_handler(const void* message) {
-            std::lock_guard<std::mutex> lock(robot_state_mutex)
+            std::lock_guard<std::mutex> lock(robot_state_mutex);
             robot_state = *(unitree_go::msg::dds_::LowState_*)message;
         }
 
