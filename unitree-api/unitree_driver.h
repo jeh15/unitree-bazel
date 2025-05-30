@@ -240,8 +240,8 @@ class UnitreeDriver {
             auto next_time = Clock::now();
             size_t consecutive_overruns = 0;
 
-            int i = 0;
-            
+            uint32_t i = 0;
+
             // Thread Loop:
             while(running) {
                 // Calculate next execution time first
@@ -263,7 +263,7 @@ class UnitreeDriver {
                 uint32_t crc = crc32_core((uint32_t *)&motor_cmd, (sizeof(unitree_go::msg::dds_::LowCmd_)>>2)-1);
                 motor_cmd.crc() = crc;
 
-                if(i % 10 == 0) {
+                if(i % 2 == 0) {
                     motor_cmd_publisher->Write(motor_cmd);
                 }
 
