@@ -44,7 +44,7 @@ class UnitreeDriver {
 
             /*create subscriber: 2nd Arg of InitChannel is queue. Make sure to set to 0 or there will be a delay.*/ 
             robot_state_subscriber.reset(new ChannelSubscriber<unitree_go::msg::dds_::LowState_>(TOPIC_LOWSTATE));
-            robot_state_subscriber->InitChannel(std::bind(&UnitreeDriver::robot_state_msg_handler, this, std::placeholders::_1), 10);
+            robot_state_subscriber->InitChannel(std::bind(&UnitreeDriver::robot_state_msg_handler, this, std::placeholders::_1), 0);
 
             initialized = true;
             return absl::OkStatus();
@@ -259,11 +259,14 @@ class UnitreeDriver {
                 }
                 
                 uint32_t crc = crc32_core((uint32_t *)&motor_cmd, (sizeof(unitree_go::msg::dds_::LowCmd_)>>2)-1);
-
-                if (crc != previous_crc) {
-                    motor_cmd.crc() = crc;
-                }
+                
+                motor_cmd.crc() = crc;
                 motor_cmd_publisher->Write(motor_cmd);
+
+                // if (crc != previous_crc) {
+                //     motor_cmd.crc() = crc;
+                //     motor_cmd_publisher->Write(motor_cmd);
+                // }
                 previous_crc = crc;
 
                 // Check for overrun and sleep until next execution time
