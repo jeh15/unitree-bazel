@@ -78,6 +78,7 @@ class UnitreeDriver {
                 motor_commands.stiffness[i] = std::clamp(new_command.stiffness[i], 0.0f, 100.0f);
                 motor_commands.damping[i] = std::clamp(new_command.damping[i], 0.0f, 100.0f);
             }
+            updated_command = true;
         }
 
         LowState get_low_state() {
@@ -188,6 +189,7 @@ class UnitreeDriver {
         // Control Thread:
         uint8_t control_rate_us;
         std::atomic<bool> running{true};
+        std::atomic<bool> updated_command{true};
         std::mutex mutex;
         std::thread thread;
         
@@ -246,7 +248,7 @@ class UnitreeDriver {
                 next_time += std::chrono::microseconds(control_rate_us);
 
                 /* Lock Guard Scope */
-                {   
+                if (updated_command) {   
                     std::lock_guard<std::mutex> lock(mutex);
                     // Iterate over motors:
                     for(size_t i = 0; i < num_motors; ++i) {
@@ -259,9 +261,12 @@ class UnitreeDriver {
 
                     // Checksum:
                     motor_cmd.crc() = crc32_core((uint32_t *)&motor_cmd, (sizeof(unitree_go::msg::dds_::LowCmd_)>>2)-1);
-                    motor_cmd_publisher->Write(motor_cmd);
-                
+                    
+                    // Set Updated Flag:
+                    updated_command = false;
                 }
+
+                motor_cmd_publisher->Write(motor_cmd);
 
                 // Check for overrun and sleep until next execution time
                 auto now = Clock::now();
