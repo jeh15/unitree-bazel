@@ -44,7 +44,7 @@ class UnitreeDriver {
 
             /*create subscriber*/
             robot_state_subscriber.reset(new ChannelSubscriber<unitree_go::msg::dds_::LowState_>(TOPIC_LOWSTATE));
-            robot_state_subscriber->InitChannel(std::bind(&UnitreeDriver::robot_state_msg_handler, this, std::placeholders::_1), 1);
+            robot_state_subscriber->InitChannel(std::bind(&UnitreeDriver::robot_state_msg_handler, this, std::placeholders::_1), 0);
 
             initialized = true;
             return absl::OkStatus();
