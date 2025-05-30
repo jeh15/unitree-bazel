@@ -81,7 +81,7 @@ class UnitreeDriver {
         }
 
         LowState get_low_state() {
-            std::lock_guard<std::mutex> lock(robot_state_mutex)
+            std::lock_guard<std::mutex> lock(robot_state_mutex);
             LowState low_state;
             for (size_t i = 0; i < 4; ++i) {
                 low_state.foot_force[i] = robot_state.foot_force()[i];
@@ -92,7 +92,7 @@ class UnitreeDriver {
         }
 
         IMUState get_imu_state() {
-            std::lock_guard<std::mutex> lock(robot_state_mutex)
+            std::lock_guard<std::mutex> lock(robot_state_mutex);
             IMUState imu_state;
             for (size_t i = 0; i < 4; ++i) {
                 imu_state.quaternion[i] = robot_state.imu_state().quaternion()[i];
@@ -111,7 +111,7 @@ class UnitreeDriver {
         }
 
         MotorState get_motor_state() {
-            std::lock_guard<std::mutex> lock(robot_state_mutex)
+            std::lock_guard<std::mutex> lock(robot_state_mutex);
             MotorState motor_state;
             for(size_t i = 0; i < num_motors; ++i) {
                 motor_state.q[i] = robot_state.motor_state()[i].q();
@@ -265,6 +265,7 @@ class UnitreeDriver {
                 
                 uint32_t crc = crc32_core((uint32_t *)&motor_cmd, (sizeof(unitree_go::msg::dds_::LowCmd_)>>2)-1);
                 motor_cmd.crc() = crc;
+                motor_cmd_publisher->Write(motor_cmd);
 
                 // if (crc != previous_crc) {
                 //     motor_cmd.crc() = crc;
