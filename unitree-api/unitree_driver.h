@@ -42,7 +42,7 @@ class UnitreeDriver {
             motor_cmd_publisher.reset(new ChannelPublisher<unitree_go::msg::dds_::LowCmd_>(TOPIC_LOWCMD));
             motor_cmd_publisher->InitChannel();
 
-            /*create subscriber*/
+            /*create subscriber: 2nd Arg of InitChannel is queue. Make sure to set to 0 or there will be a delay.*/ 
             robot_state_subscriber.reset(new ChannelSubscriber<unitree_go::msg::dds_::LowState_>(TOPIC_LOWSTATE));
             robot_state_subscriber->InitChannel(std::bind(&UnitreeDriver::robot_state_msg_handler, this, std::placeholders::_1), 0);
 
