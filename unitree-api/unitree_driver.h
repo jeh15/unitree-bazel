@@ -44,7 +44,7 @@ class UnitreeDriver {
 
             /*create subscriber: 2nd Arg of InitChannel is queue. Make sure to set to 0 or there will be a delay.*/ 
             robot_state_subscriber.reset(new ChannelSubscriber<unitree_go::msg::dds_::LowState_>(TOPIC_LOWSTATE));
-            robot_state_subscriber->InitChannel(std::bind(&UnitreeDriver::robot_state_msg_handler, this, std::placeholders::_1), 0);
+            robot_state_subscriber->InitChannel(std::bind(&UnitreeDriver::robot_state_msg_handler, this, std::placeholders::_1), 10);
 
             initialized = true;
             return absl::OkStatus();
@@ -78,7 +78,6 @@ class UnitreeDriver {
                 motor_commands.stiffness[i] = std::clamp(new_command.stiffness[i], 0.0f, 100.0f);
                 motor_commands.damping[i] = std::clamp(new_command.damping[i], 0.0f, 100.0f);
             }
-            updated_command = true;
         }
 
         LowState get_low_state() {
@@ -189,7 +188,6 @@ class UnitreeDriver {
         // Control Thread:
         uint8_t control_rate_us;
         std::atomic<bool> running{true};
-        std::atomic<bool> updated_command{true};
         std::mutex mutex;
         std::thread thread;
         
@@ -248,7 +246,7 @@ class UnitreeDriver {
                 next_time += std::chrono::microseconds(control_rate_us);
 
                 /* Lock Guard Scope */
-                if (updated_command) {   
+                {   
                     std::lock_guard<std::mutex> lock(mutex);
                     // Iterate over motors:
                     for(size_t i = 0; i < num_motors; ++i) {
@@ -258,9 +256,6 @@ class UnitreeDriver {
                         motor_cmd.motor_cmd()[i].kd() = motor_commands.damping[i];
                         motor_cmd.motor_cmd()[i].tau() = motor_commands.torque_feedforward[i];
                     }
-                    
-                    // Set Updated Flag:
-                    updated_command = false;
                 }
 
                 motor_cmd.crc() = crc32_core((uint32_t *)&motor_cmd, (sizeof(unitree_go::msg::dds_::LowCmd_)>>2)-1);
