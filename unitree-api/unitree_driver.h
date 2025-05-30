@@ -293,7 +293,7 @@ class UnitreeDriver {
                     motor_cmd.crc() = crc;
                     motor_cmd_publisher->Write(motor_cmd);
                     
-                    auto system_time_now = std::chrono::system_clock::now()
+                    auto system_time_now = std::chrono::system_clock::now();
                     std::cout << "CRC Changed:" << system_time_now.count() << std::endl;
                 }
                 previous_crc = crc;
