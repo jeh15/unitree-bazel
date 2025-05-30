@@ -81,6 +81,7 @@ class UnitreeDriver {
         }
 
         LowState get_low_state() {
+            std::lock_guard<std::mutex> lock(robot_state_mutex)
             LowState low_state;
             for (size_t i = 0; i < 4; ++i) {
                 low_state.foot_force[i] = robot_state.foot_force()[i];
@@ -91,6 +92,7 @@ class UnitreeDriver {
         }
 
         IMUState get_imu_state() {
+            std::lock_guard<std::mutex> lock(robot_state_mutex)
             IMUState imu_state;
             for (size_t i = 0; i < 4; ++i) {
                 imu_state.quaternion[i] = robot_state.imu_state().quaternion()[i];
@@ -109,6 +111,7 @@ class UnitreeDriver {
         }
 
         MotorState get_motor_state() {
+            std::lock_guard<std::mutex> lock(robot_state_mutex)
             MotorState motor_state;
             for(size_t i = 0; i < num_motors; ++i) {
                 motor_state.q[i] = robot_state.motor_state()[i].q();
@@ -190,6 +193,7 @@ class UnitreeDriver {
         std::atomic<bool> running{true};
         std::mutex mutex;
         std::thread thread;
+        std::mutex robot_state_mutex;
         
         uint32_t crc32_core(uint32_t* ptr, uint32_t len) {
             unsigned int xbit = 0;
@@ -232,6 +236,7 @@ class UnitreeDriver {
         }
 
         void robot_state_msg_handler(const void* message) {
+            std::lock_guard<std::mutex> lock(robot_state_mutex)
             robot_state = *(unitree_go::msg::dds_::LowState_*)message;
         }
 
@@ -239,8 +244,6 @@ class UnitreeDriver {
             using Clock = std::chrono::steady_clock;
             auto next_time = Clock::now();
             size_t consecutive_overruns = 0;
-
-            uint32_t i = 0;
 
             // Thread Loop:
             while(running) {
@@ -263,17 +266,11 @@ class UnitreeDriver {
                 uint32_t crc = crc32_core((uint32_t *)&motor_cmd, (sizeof(unitree_go::msg::dds_::LowCmd_)>>2)-1);
                 motor_cmd.crc() = crc;
 
-                if(i % 2 == 0) {
-                    motor_cmd_publisher->Write(motor_cmd);
-                }
-
-                i++;
-
                 // if (crc != previous_crc) {
                 //     motor_cmd.crc() = crc;
                 //     motor_cmd_publisher->Write(motor_cmd);
                 // }
-                previous_crc = crc;
+                // previous_crc = crc;
 
                 // Check for overrun and sleep until next execution time
                 auto now = Clock::now();
