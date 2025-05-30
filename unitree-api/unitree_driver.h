@@ -262,8 +262,8 @@ class UnitreeDriver {
 
                 if (crc != previous_crc) {
                     motor_cmd.crc() = crc;
-                    motor_cmd_publisher->Write(motor_cmd);
                 }
+                motor_cmd_publisher->Write(motor_cmd);
                 previous_crc = crc;
 
                 // Check for overrun and sleep until next execution time
