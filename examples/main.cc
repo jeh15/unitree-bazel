@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
     absl::Status result;
 
     // Initialize Unitree Driver:
-    std::string network_name = "eno2"; // Follow the official Unitree SDK guide to figure out the network name.
+    std::string network_name = "enx7cc2c647de4f"; // Follow the official Unitree SDK guide to figure out the network name.
     int control_rate_us = 2000;   // Control rate of inner control loop in microseconds.
     UnitreeDriver unitree_driver(network_name, control_rate_us);
     result.Update(unitree_driver.initialize());
@@ -74,6 +74,12 @@ int main(int argc, char** argv) {
             motor_commands.stiffness[value] = 60.0 * ratio;
             motor_commands.damping[value] = 5.0 * ratio;
         }
+        unitree_driver.update_command(motor_commands);
+        std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time_ms));
+    }
+
+    bool is_running = true;
+    while (is_running) {
         unitree_driver.update_command(motor_commands);
         std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time_ms));
     }
