@@ -52,13 +52,31 @@ class UnitreeDriver {
             return absl::OkStatus();
         }
 
+        // absl::Status initialize_thread() {
+        //     if(!initialized)
+        //         return absl::FailedPreconditionError("Motor Controller not initialized");
+
+        //     thread_ptr = CreateRecurrentThreadEx("control_loop", UT_CPU_ID_NONE, control_rate_us, &UnitreeDriver::control_loop, this);
+
+        //     thread_initialized = true;
+        //     return absl::OkStatus();
+        // }
+
         absl::Status initialize_thread() {
             if(!initialized)
                 return absl::FailedPreconditionError("Motor Controller not initialized");
 
-            thread_ptr = CreateRecurrentThreadEx("control_loop", UT_CPU_ID_NONE, control_rate_us, &UnitreeDriver::control_loop, this);
-
+            thread = std::thread(&UnitreeDriver::control_loop, this);
             thread_initialized = true;
+            return absl::OkStatus();
+        }
+
+        absl::Status stop_thread() {
+            if(!initialized || !thread_initialized)
+                return absl::FailedPreconditionError("Motor Controller or Control Thread not initialized");
+
+            running = false;
+            thread.join();
             return absl::OkStatus();
         }
 
@@ -183,7 +201,9 @@ class UnitreeDriver {
         ChannelSubscriberPtr<unitree_go::msg::dds_::LowState_> robot_state_subscriber;
         // Control Thread:
         uint8_t control_rate_us;
+        std::atomic<bool> running{true};
         ThreadPtr thread_ptr;
+        std::thread thread;
         std::mutex mutex;
         std::mutex robot_state_mutex;
         
@@ -232,21 +252,92 @@ class UnitreeDriver {
             robot_state = *(unitree_go::msg::dds_::LowState_*)message;
         }
 
+        // void control_loop() {
+        //     /* Lock Guard Scope */
+        //     {   
+        //         std::lock_guard<std::mutex> lock(mutex);
+        //         // Iterate over motors:
+        //         for(size_t i = 0; i < num_motors; ++i) {
+        //             motor_cmd.motor_cmd()[i].q() = motor_commands.q_setpoint[i];
+        //             motor_cmd.motor_cmd()[i].dq() = motor_commands.qd_setpoint[i];
+        //             motor_cmd.motor_cmd()[i].kp() = motor_commands.stiffness[i];
+        //             motor_cmd.motor_cmd()[i].kd() = motor_commands.damping[i];
+        //             motor_cmd.motor_cmd()[i].tau() = motor_commands.torque_feedforward[i];
+        //         }
+        //     }
+
+        //     motor_cmd.crc() = crc32_core((uint32_t *)&motor_cmd, (sizeof(unitree_go::msg::dds_::LowCmd_)>>2)-1);
+        //     motor_cmd_publisher->Write(motor_cmd, 0);
+        // }
+
         void control_loop() {
-            /* Lock Guard Scope */
-            {   
-                std::lock_guard<std::mutex> lock(mutex);
-                // Iterate over motors:
-                for(size_t i = 0; i < num_motors; ++i) {
-                    motor_cmd.motor_cmd()[i].q() = motor_commands.q_setpoint[i];
-                    motor_cmd.motor_cmd()[i].dq() = motor_commands.qd_setpoint[i];
-                    motor_cmd.motor_cmd()[i].kp() = motor_commands.stiffness[i];
-                    motor_cmd.motor_cmd()[i].kd() = motor_commands.damping[i];
-                    motor_cmd.motor_cmd()[i].tau() = motor_commands.torque_feedforward[i];
+            using Clock = std::chrono::steady_clock;
+            auto next_time = Clock::now();
+            size_t consecutive_overruns = 0;
+
+            // uint32_t iter = 0;
+
+            // Thread Loop:
+            while(running) {
+                // Calculate next execution time first
+                next_time += std::chrono::microseconds(control_rate_us);
+
+                // DDS Motor Command:
+                unitree_go::msg::dds_::LowCmd_ motor_cmd{};
+                motor_cmd.head()[0] = 0xFE;
+                motor_cmd.head()[1] = 0xEF;
+                motor_cmd.level_flag() = 0xFF;
+                motor_cmd.gpio() = 0;
+                for(int i = 0; i < 20; ++i) {
+                    motor_cmd.motor_cmd()[i].mode() = (0x01);
+                    motor_cmd.motor_cmd()[i].q() = (PosStopF);
+                    motor_cmd.motor_cmd()[i].kp() = (0);
+                    motor_cmd.motor_cmd()[i].dq() = (VelStopF);
+                    motor_cmd.motor_cmd()[i].kd() = (0);
+                    motor_cmd.motor_cmd()[i].tau() = (0);
+                }
+
+                /* Lock Guard Scope */
+                {   
+                    std::lock_guard<std::mutex> lock(mutex);
+                    // Iterate over motors:
+                    for(size_t i = 0; i < num_motors; ++i) {
+                        motor_cmd.motor_cmd()[i].q() = motor_commands.q_setpoint[i];
+                        motor_cmd.motor_cmd()[i].dq() = motor_commands.qd_setpoint[i];
+                        motor_cmd.motor_cmd()[i].kp() = motor_commands.stiffness[i];
+                        motor_cmd.motor_cmd()[i].kd() = motor_commands.damping[i];
+                        motor_cmd.motor_cmd()[i].tau() = motor_commands.torque_feedforward[i];
+                    }
+                }
+
+                motor_cmd.crc() = crc32_core((uint32_t *)&motor_cmd, (sizeof(unitree_go::msg::dds_::LowCmd_)>>2)-1);
+                motor_cmd_publisher->Write(motor_cmd, 0);
+
+                // TODO(jeh15): Sending a write command every loop results in motor delay.
+                // Setting the control rate lower does not resolve the issue.
+                // The only way I found is to artifically delay the call. Not sure what the issues is.
+                // Tried setting a custom DDS QoS config and realtime thread priority... Did not resolve the issue...
+                // if (iter % 5 == 0) {
+                //     motor_cmd_publisher->Write(motor_cmd, 0);
+                // }
+                // iter++;
+
+                // Check for overrun and sleep until next execution time
+                auto now = Clock::now();
+                if (now < next_time) {
+                    std::this_thread::sleep_until(next_time);
+                    consecutive_overruns = 0;
+                } 
+                else {
+                    // Log overrun after 10 consecutive overruns
+                    consecutive_overruns++;
+                    if (consecutive_overruns >= 10) {
+                        auto overrun = std::chrono::duration_cast<std::chrono::microseconds>(now - next_time);
+                        std::cout << "Motor Control Loop Execution Time Exceeded Control Rate: " 
+                                << overrun.count() << "us" << std::endl;
+                    }
+                    next_time = now;
                 }
             }
-
-            motor_cmd.crc() = crc32_core((uint32_t *)&motor_cmd, (sizeof(unitree_go::msg::dds_::LowCmd_)>>2)-1);
-            motor_cmd_publisher->Write(motor_cmd, 0);
         }
 };
