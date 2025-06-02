@@ -30,38 +30,38 @@
                 }
             }
         },
-        "robot_state_reader": { // New QoS profile for the LowState DataReader
+        "robot_state_reader": {
             "datareader_qos": {
                 "Reliability": {
-                    // Use BEST_EFFORT if occasional state loss is acceptable for lower latency.
-                    // If every state message is critical, consider RELIABLE.
-                    "kind": "BEST_EFFORT_RELIABILITY_QOS"
-                    // If using RELIABLE, max_blocking_time is for the DataWriter, not applicable here directly.
-                    // The reader side of RELIABLE will request repairs if needed.
+                    "kind": "BEST_EFFORT_RELIABILITY_QOS",
+                    "max_blocking_time": {
+                        "sec": 0,
+                        "nanosec": 0
+                    }
                 },
                 "Durability": {
-                    "kind": "VOLATILE_DURABILITY_QOS" // Assuming old states are not needed by late joiners
+                    "kind": "VOLATILE_DURABILITY_QOS"
                 },
                 "History": {
                     "kind": "KEEP_LAST_HISTORY_QOS",
-                    "depth": 1 // Process only the most recent state
+                    "depth": 1
                 },
                 "ResourceLimits": {
-                    "max_samples": 1, // Consistent with history depth 1
+                    "max_samples": 1,
                     "max_instances": 1,
                     "max_samples_per_instance": 1
                 },
-                "Liveliness": { // Optional: Detect if the robot stops sending state
+                "Liveliness": {
                     "kind": "AUTOMATIC_LIVELINESS_QOS",
-                    "lease_duration": { // Adjust as needed, e.g., 2-5x expected publish interval
+                    "lease_duration": {
                         "sec": 0,
-                        "nanosec": 500000000 // 500ms example
+                        "nanosec": 500000000
                     }
                 },
-                "Deadline": { // Optional: Get a notification if state messages arrive slower than expected
-                    "period": { // Example: Expect state at least every 20ms (adjust to your needs)
+                "Deadline": {
+                    "period": {
                         "sec": 0,
-                        "nanosec": 20000000 // Must be greater than the actual publishing period
+                        "nanosec": 20000000
                     }
                 }
             }
@@ -71,13 +71,12 @@
         "rt/lowcmd": {
             "datawriter_profile": "motor_command_writer"
         },
-        "rt/lowstate": { // Associate the new reader profile with the state topic
+        "rt/lowstate": {
             "datareader_profile": "robot_state_reader"
         }
     },
-    "participant_qos": { // This section is specific to your Unitree SDK
+    "participant_qos": {
         "domain_id": 0,
-        "network_interface": "enx7cc2c647de4f" // Ensure this is your dedicated real-time Ethernet interface
-        // Potentially other SDK-specific tunings could go here if supported
+        "network_interface": "enx7cc2c647de4f"
     }
 }
