@@ -317,7 +317,7 @@ class UnitreeDriver {
                 // Setting the control rate lower does not resolve the issue.
                 // The only way I found is to artifically delay the call. Not sure what the issues is.
                 // Tried setting a custom DDS QoS config and realtime thread priority... Did not resolve the issue...
-                if (iter % 5 == 0) {
+                if (iter % 2 == 0) {
                     motor_cmd_publisher->Write(motor_cmd, 0);
                 }
                 iter++;
