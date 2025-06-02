@@ -12,6 +12,7 @@ cc_library(
     deps = [
         "//unitree-api:unitree_driver",
         "//unitree-api:containers",
+        "//unitree-api/config:json_config",
     ],
     visibility = ["//visibility:public"],
 )
