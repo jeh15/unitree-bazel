@@ -29,51 +29,12 @@
                     }
                 }
             }
-        },
-        "robot_state_reader": {
-            "datareader_qos": {
-                "Reliability": {
-                    "kind": "BEST_EFFORT_RELIABILITY_QOS",
-                    "max_blocking_time": {
-                        "sec": 0,
-                        "nanosec": 0
-                    }
-                },
-                "Durability": {
-                    "kind": "VOLATILE_DURABILITY_QOS"
-                },
-                "History": {
-                    "kind": "KEEP_LAST_HISTORY_QOS",
-                    "depth": 1
-                },
-                "ResourceLimits": {
-                    "max_samples": 1,
-                    "max_instances": 1,
-                    "max_samples_per_instance": 1
-                },
-                "Liveliness": {
-                    "kind": "AUTOMATIC_LIVELINESS_QOS",
-                    "lease_duration": {
-                        "sec": 0,
-                        "nanosec": 500000000
-                    }
-                },
-                "Deadline": {
-                    "period": {
-                        "sec": 0,
-                        "nanosec": 20000000
-                    }
-                }
-            }
         }
     },
     "topic_qos": {
         "rt/lowcmd": {
             "datawriter_profile": "motor_command_writer"
         },
-        "rt/lowstate": {
-            "datareader_profile": "robot_state_reader"
-        }
     },
     "participant_qos": {
         "domain_id": 0,
