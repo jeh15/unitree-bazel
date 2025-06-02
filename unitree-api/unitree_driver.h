@@ -71,7 +71,7 @@ class UnitreeDriver {
         }
 
         void update_command(MotorCommand& new_command) {
-            // std::lock_guard<std::mutex> lock(mutex);
+            std::lock_guard<std::mutex> lock(mutex);
             // Iterate over motors and update motor command:
             for(size_t i = 0; i < num_motors; ++i) {
                 motor_commands.q_setpoint[i] = std::clamp(new_command.q_setpoint[i], motor_limits.q_lb[i], motor_limits.q_ub[i]);
@@ -255,7 +255,7 @@ class UnitreeDriver {
 
                 /* Lock Guard Scope */
                 {   
-                    // std::lock_guard<std::mutex> lock(mutex);
+                    std::lock_guard<std::mutex> lock(mutex);
                     // Iterate over motors:
                     for(size_t i = 0; i < num_motors; ++i) {
                         motor_cmd.motor_cmd()[i].q() = motor_commands.q_setpoint[i];
