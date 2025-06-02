@@ -8,9 +8,9 @@
 #include <mutex>
 #include <atomic>
 #include <algorithm>
+#include <filesystem>
 
 #include "absl/status/status.h"
-#include "rules_cc/cc/runfiles/runfiles.h"
 
 #include <unitree/robot/channel/channel_publisher.hpp>
 #include <unitree/robot/channel/channel_subscriber.hpp>
@@ -23,7 +23,6 @@
 using namespace unitree::common;
 using namespace unitree::robot;
 using namespace unitree::containers;
-using rules_cc::cc::runfiles::Runfiles;
 
 #define TOPIC_LOWCMD "rt/lowcmd"
 #define TOPIC_LOWSTATE "rt/lowstate"
@@ -31,18 +30,10 @@ using rules_cc::cc::runfiles::Runfiles;
 
 class UnitreeDriver {
     public:
-        explicit UnitreeDriver(int control_rate_us = 2000): control_rate_us(control_rate_us) {}
+        explicit UnitreeDriver(const std::filesystem::path& config_filepath, int control_rate_us = 2000): config_filepath(config_filepath), control_rate_us(control_rate_us) {}
         ~UnitreeDriver() {}
 
         absl::Status initialize() {
-            // Get JSON Config:
-            std::string error;
-            std::unique_ptr<Runfiles> runfiles(
-                Runfiles::Create(argv[0], BAZEL_CURRENT_REPOSITORY, &error)
-            );
-            std::filesystem::path config_filepath = 
-                runfiles->Rlocation("unitree-bazel/unitree-api/configs/qos_config.json");
-            
             // Initialize Channel with Config:
             ChannelFactory::Instance()->Init(config_filepath);
 
@@ -194,6 +185,7 @@ class UnitreeDriver {
         const double VelStopF = (16000.0f);
         uint32_t previous_crc = 0;
         // Communication and Messages:
+        std::filesystem::path config_filepath;
         unitree_go::msg::dds_::LowCmd_ motor_cmd{};
         unitree_go::msg::dds_::LowState_ robot_state{};
         ChannelPublisherPtr<unitree_go::msg::dds_::LowCmd_> motor_cmd_publisher;
