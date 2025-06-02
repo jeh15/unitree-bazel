@@ -10,17 +10,20 @@
 #include <algorithm>
 
 #include "absl/status/status.h"
+#include "rules_cc/cc/runfiles/runfiles.h"
 
 #include <unitree/robot/channel/channel_publisher.hpp>
 #include <unitree/robot/channel/channel_subscriber.hpp>
 #include <unitree/idl/go2/LowState_.hpp>
 #include <unitree/idl/go2/LowCmd_.hpp>
+#include <unitree/common/json/json_config.hpp>
 
 #include "unitree-api/containers.h"
 
 using namespace unitree::common;
 using namespace unitree::robot;
 using namespace unitree::containers;
+using rules_cc::cc::runfiles::Runfiles;
 
 #define TOPIC_LOWCMD "rt/lowcmd"
 #define TOPIC_LOWSTATE "rt/lowstate"
@@ -28,12 +31,20 @@ using namespace unitree::containers;
 
 class UnitreeDriver {
     public:
-        explicit UnitreeDriver(const std::string network_name, int control_rate_us = 2000): network_name(network_name), control_rate_us(control_rate_us) {}
+        explicit UnitreeDriver(int control_rate_us = 2000): control_rate_us(control_rate_us) {}
         ~UnitreeDriver() {}
 
         absl::Status initialize() {
-            // Initialize Channel:
-            ChannelFactory::Instance()->Init(0, network_name);
+            // Get JSON Config:
+            std::string error;
+            std::unique_ptr<Runfiles> runfiles(
+                Runfiles::Create(argv[0], BAZEL_CURRENT_REPOSITORY, &error)
+            );
+            std::filesystem::path config_filepath = 
+                runfiles->Rlocation("unitree-bazel/unitree-api/configs/qos_config.json");
+            
+            // Initialize Channel with Config:
+            ChannelFactory::Instance()->Init(config_filepath);
 
             // Initialization Command Message:
             init_cmd_msg();
@@ -183,7 +194,6 @@ class UnitreeDriver {
         const double VelStopF = (16000.0f);
         uint32_t previous_crc = 0;
         // Communication and Messages:
-        std::string network_name;
         unitree_go::msg::dds_::LowCmd_ motor_cmd{};
         unitree_go::msg::dds_::LowState_ robot_state{};
         ChannelPublisherPtr<unitree_go::msg::dds_::LowCmd_> motor_cmd_publisher;
