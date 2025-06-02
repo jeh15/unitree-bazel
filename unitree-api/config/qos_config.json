@@ -34,7 +34,7 @@
     "topic_qos": {
         "rt/lowcmd": {
             "datawriter_profile": "motor_command_writer"
-        },
+        }
     },
     "participant_qos": {
         "domain_id": 0,
