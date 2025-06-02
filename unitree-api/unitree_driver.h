@@ -10,10 +10,6 @@
 #include <algorithm>
 #include <filesystem>
 
-#include <sys/resource.h>
-#include <sched.h>      // For sched_param, SCHED_FIFO, etc.
-#include <pthread.h>    // For pthread_setschedparam
-
 #include "absl/status/status.h"
 
 #include <unitree/robot/channel/channel_publisher.hpp>
@@ -34,12 +30,12 @@ using namespace unitree::containers;
 
 class UnitreeDriver {
     public:
-        explicit UnitreeDriver(const std::filesystem::path& config_filepath, int control_rate_us = 2000): config_filepath(config_filepath), control_rate_us(control_rate_us) {}
+        explicit UnitreeDriver(const std::string network_name, int control_rate_us = 2000): network_name(network_name), control_rate_us(control_rate_us) {}
         ~UnitreeDriver() {}
 
         absl::Status initialize() {
             // Initialize Channel with Config:
-            ChannelFactory::Instance()->Init(config_filepath);
+            ChannelFactory::Instance()->Init(0, network_name);
 
             // Initialization Command Message:
             init_cmd_msg();
@@ -61,40 +57,6 @@ class UnitreeDriver {
                 return absl::FailedPreconditionError("Motor Controller not initialized");
 
             thread = std::thread(&UnitreeDriver::control_loop, this);
-            
-            // Get the native handle of the std::thread
-            pthread_t this_thread = thread.native_handle();
-
-            // Define scheduling parameters
-            struct sched_param sched_params;
-            // Set priority (typically 1-99 for SCHED_FIFO/SCHED_RR, 99 being highest)
-            // Check min/max priority for SCHED_FIFO using sched_get_priority_min/max
-            int policy = SCHED_FIFO;
-            int max_priority = sched_get_priority_max(policy);
-            if (max_priority == -1) {
-                std::cerr << "Error getting max priority for SCHED_FIFO: " << strerror(errno) << std::endl;
-                // Handle error, perhaps continue without setting priority
-                return absl::InternalError("Failed to get max scheduling priority.");
-            }
-            
-            // Set a high, but not necessarily max, priority.
-            // A value like max_priority - 10 or similar is often good.
-            // For critical control loops, you might go very high.
-            sched_params.sched_priority = max_priority; // Or a slightly lower value like max_priority - 10;
-
-            // Attempt to set the scheduling policy and parameters
-            if (pthread_setschedparam(this_thread, policy, &sched_params) != 0) {
-                std::cerr << "WARNING: Failed to set real-time thread priority (SCHED_FIFO) for control loop. "
-                        << "Error: " << strerror(errno) << std::endl;
-                std::cerr << "         (This typically requires root privileges or CAP_SYS_NICE capability.)" << std::endl;
-                // The thread will still run, but without real-time guarantees.
-                // You might want to log this warning.
-            } else {
-                std::cout << "Successfully set control loop thread to SCHED_FIFO with priority " 
-                        << sched_params.sched_priority << std::endl;
-            }
-            // --- End of corrected real-time priority setting ---
-
             thread_initialized = true;
             return absl::OkStatus();
         }
@@ -223,7 +185,7 @@ class UnitreeDriver {
         const double VelStopF = (16000.0f);
         uint32_t previous_crc = 0;
         // Communication and Messages:
-        std::filesystem::path config_filepath;
+        std::string network_name;
         unitree_go::msg::dds_::LowCmd_ motor_cmd{};
         unitree_go::msg::dds_::LowState_ robot_state{};
         ChannelPublisherPtr<unitree_go::msg::dds_::LowCmd_> motor_cmd_publisher;
