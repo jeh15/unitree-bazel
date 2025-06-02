@@ -272,6 +272,7 @@ class UnitreeDriver {
                     motor_cmd.crc() = crc;
                     motor_cmd_publisher->Write(motor_cmd, 0);
                 }
+                iter++;
 
                 // if (crc != previous_crc) {
                 //     motor_cmd.crc() = crc;
