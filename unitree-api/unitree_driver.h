@@ -56,7 +56,7 @@ class UnitreeDriver {
             if(!initialized)
                 return absl::FailedPreconditionError("Motor Controller not initialized");
 
-            thrad_ptr = CreateRecurrentThreadEx("control_loop", UT_CPU_ID_NONE, control_rate_us, &UnitreeDriver::control_loop, this);
+            thread_ptr = CreateRecurrentThreadEx("control_loop", UT_CPU_ID_NONE, control_rate_us, &UnitreeDriver::control_loop, this);
 
             thread_initialized = true;
             return absl::OkStatus();

@@ -85,9 +85,5 @@ int main(int argc, char** argv) {
         std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time_ms));
     }
 
-    // Clean up and stop the thread: (Becareful as this will stop control!)
-    result.Update(unitree_driver.stop_thread());
-    ABSL_CHECK(result.ok()) << result.message();
-
     return 0;
 }
