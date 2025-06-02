@@ -275,7 +275,7 @@ class UnitreeDriver {
             auto next_time = Clock::now();
             size_t consecutive_overruns = 0;
 
-            // uint32_t iter = 0;
+            uint32_t iter = 0;
 
             // Thread Loop:
             while(running) {
