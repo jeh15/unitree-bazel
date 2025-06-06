@@ -4,21 +4,28 @@
 
 #include "absl/status/status.h"
 #include "absl/log/absl_check.h"
+#include "rules_cc/cc/runfiles/runfiles.h"
 
-#include "unitree-api/go2/unitree_driver.h"
-#include "unitree-api/go2/containers.h"
+#include "unitree-api/unitree_driver.h"
+#include "unitree-api/containers.h"
 
 using namespace unitree::containers;
-
+using rules_cc::cc::runfiles::Runfiles;
 
 int main(int argc, char** argv) {
     // Abseil Status:
     absl::Status result;
 
     // Initialize Unitree Driver:
-    std::string network_name = "enx7cc2c647de4f"; // Follow the official Unitree SDK guide to figure out the network name.
+    std::string error;
+    std::unique_ptr<Runfiles> runfiles(
+        Runfiles::Create(argv[0], &error)
+    );
+
+    std::filesystem::path config_filepath = 
+        runfiles->Rlocation("unitree-bazel/unitree-api/config/qos_config.json");
     int control_rate_us = 2000;   // Control rate of inner control loop in microseconds.
-    UnitreeDriver unitree_driver(network_name, control_rate_us);
+    UnitreeDriver unitree_driver(config_filepath, control_rate_us);
     result.Update(unitree_driver.initialize());
     ABSL_CHECK(result.ok()) << result.message();
 
@@ -74,6 +81,12 @@ int main(int argc, char** argv) {
             motor_commands.stiffness[value] = 60.0 * ratio;
             motor_commands.damping[value] = 5.0 * ratio;
         }
+        unitree_driver.update_command(motor_commands);
+        std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time_ms));
+    }
+
+    bool is_running = true;
+    while (is_running) {
         unitree_driver.update_command(motor_commands);
         std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time_ms));
     }

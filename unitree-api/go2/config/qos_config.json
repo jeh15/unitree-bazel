@@ -1,0 +1,43 @@
+{
+    "qos_profiles": {
+        "motor_command_writer": {
+            "datawriter_qos": {
+                "Reliability": {
+                    "kind": "BEST_EFFORT_RELIABILITY_QOS",
+                    "max_blocking_time": {
+                        "sec": 0,
+                        "nanosec": 0
+                    }
+                },
+                "Durability": {
+                    "kind": "VOLATILE_DURABILITY_QOS"
+                },
+                "History": {
+                    "kind": "KEEP_LAST_HISTORY_QOS",
+                    "depth": 1
+                },
+                "ResourceLimits": {
+                    "max_samples": 1,
+                    "max_instances": 1,
+                    "max_samples_per_instance": 1
+                },
+                "Liveliness": {
+                    "kind": "AUTOMATIC_LIVELINESS_QOS",
+                    "lease_duration": {
+                        "sec": 1,
+                        "nanosec": 0
+                    }
+                }
+            }
+        }
+    },
+    "topic_qos": {
+        "rt/lowcmd": {
+            "datawriter_profile": "motor_command_writer"
+        }
+    },
+    "participant_qos": {
+        "domain_id": 0,
+        "network_interface": "enx7cc2c647de4f"
+    }
+}

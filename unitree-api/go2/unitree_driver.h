@@ -8,6 +8,7 @@
 #include <mutex>
 #include <atomic>
 #include <algorithm>
+#include <filesystem>
 
 #include "absl/status/status.h"
 
@@ -15,6 +16,7 @@
 #include <unitree/robot/channel/channel_subscriber.hpp>
 #include <unitree/idl/go2/LowState_.hpp>
 #include <unitree/idl/go2/LowCmd_.hpp>
+#include <unitree/common/json/json_config.hpp>
 
 #include "unitree-api/go2/containers.h"
 
@@ -28,12 +30,16 @@ using namespace unitree::containers;
 
 class UnitreeDriver {
     public:
-        explicit UnitreeDriver(const std::string network_name, int control_rate_us = 2000): network_name(network_name), control_rate_us(control_rate_us) {}
+        explicit UnitreeDriver(
+            const std::filesystem::path& config_filepath,
+            uint32_t control_rate_us = 2000,
+            uint32_t control_rate_limit_us = 10000
+        ): config_filepath(config_filepath), control_rate_us(control_rate_us), control_rate_limit_us(control_rate_limit_us) {}
         ~UnitreeDriver() {}
 
         absl::Status initialize() {
             // Initialize Channel:
-            ChannelFactory::Instance()->Init(0, network_name);
+            ChannelFactory::Instance()->Init(config_filepath);
 
             // Initialization Command Message:
             init_cmd_msg();
@@ -44,7 +50,7 @@ class UnitreeDriver {
 
             /*create subscriber*/
             robot_state_subscriber.reset(new ChannelSubscriber<unitree_go::msg::dds_::LowState_>(TOPIC_LOWSTATE));
-            robot_state_subscriber->InitChannel(std::bind(&UnitreeDriver::robot_state_msg_handler, this, std::placeholders::_1), 1);
+            robot_state_subscriber->InitChannel(std::bind(&UnitreeDriver::robot_state_msg_handler, this, std::placeholders::_1), 0);
 
             initialized = true;
             return absl::OkStatus();
@@ -69,7 +75,7 @@ class UnitreeDriver {
         }
 
         void update_command(MotorCommand& new_command) {
-            std::lock_guard<std::mutex> lock(mutex);
+            std::lock_guard<std::mutex> lock(control_mutex);
             // Iterate over motors and update motor command:
             for(size_t i = 0; i < num_motors; ++i) {
                 motor_commands.q_setpoint[i] = std::clamp(new_command.q_setpoint[i], motor_limits.q_lb[i], motor_limits.q_ub[i]);
@@ -81,6 +87,7 @@ class UnitreeDriver {
         }
 
         LowState get_low_state() {
+            std::lock_guard<std::mutex> lock(robot_state_mutex);
             LowState low_state;
             for (size_t i = 0; i < 4; ++i) {
                 low_state.foot_force[i] = robot_state.foot_force()[i];
@@ -91,6 +98,7 @@ class UnitreeDriver {
         }
 
         IMUState get_imu_state() {
+            std::lock_guard<std::mutex> lock(robot_state_mutex);
             IMUState imu_state;
             for (size_t i = 0; i < 4; ++i) {
                 imu_state.quaternion[i] = robot_state.imu_state().quaternion()[i];
@@ -109,6 +117,7 @@ class UnitreeDriver {
         }
 
         MotorState get_motor_state() {
+            std::lock_guard<std::mutex> lock(robot_state_mutex);
             MotorState motor_state;
             for(size_t i = 0; i < num_motors; ++i) {
                 motor_state.q[i] = robot_state.motor_state()[i].q();
@@ -179,15 +188,17 @@ class UnitreeDriver {
         const double PosStopF = (2.146E+9f);
         const double VelStopF = (16000.0f);
         // Communication and Messages:
-        std::string network_name;
+        std::filesystem::path config_filepath;
         unitree_go::msg::dds_::LowCmd_ motor_cmd{};
         unitree_go::msg::dds_::LowState_ robot_state{};
         ChannelPublisherPtr<unitree_go::msg::dds_::LowCmd_> motor_cmd_publisher;
         ChannelSubscriberPtr<unitree_go::msg::dds_::LowState_> robot_state_subscriber;
         // Control Thread:
-        uint8_t control_rate_us;
+        uint32_t control_rate_us;
+        uint32_t control_rate_limit_us;
         std::atomic<bool> running{true};
-        std::mutex mutex;
+        std::mutex control_mutex;
+        std::mutex robot_state_mutex;
         std::thread thread;
         
         // Table Look Up CRC32 Calculation:
@@ -257,12 +268,14 @@ class UnitreeDriver {
         }
 
         void robot_state_msg_handler(const void* message) {
+            std::lock_guard<std::mutex> lock(robot_state_mutex);
             robot_state = *(unitree_go::msg::dds_::LowState_*)message;
         }
 
         void control_loop() {
             using Clock = std::chrono::steady_clock;
             auto next_time = Clock::now();
+            auto last_sent_time;
             size_t consecutive_overruns = 0;
 
             // Thread Loop:
@@ -272,7 +285,7 @@ class UnitreeDriver {
 
                 /* Lock Guard Scope */
                 {   
-                    std::lock_guard<std::mutex> lock(mutex);
+                    std::lock_guard<std::mutex> lock(control_mutex);
                     // Iterate over motors:
                     for(size_t i = 0; i < num_motors; ++i) {
                         motor_cmd.motor_cmd()[i].q() = motor_commands.q_setpoint[i];
@@ -285,11 +298,24 @@ class UnitreeDriver {
                 }
 
                 // Checksum:
-                motor_cmd.crc() = crc32_core((uint32_t *)&motor_cmd, (sizeof(unitree_go::msg::dds_::LowCmd_)>>2)-1);
+                uint32_t crc = crc32_core((uint32_t *)&motor_cmd, (sizeof(unitree_go::msg::dds_::LowCmd_)>>2)-1);
+                motor_cmd.crc() = crc;
 
+                auto now = Clock::now();
                 // Publish Command:
-                motor_cmd_publisher->Write(motor_cmd);
-
+                if (crc != previous_crc) {
+                    motor_cmd_publisher->Write(motor_cmd, 0);
+                    last_sent_time = now;
+                }
+                else {
+                    // Rate limiter for repeated commands:
+                    auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(now - last_sent_time);
+                    if (elapsed.count() >= control_rate_limit_us) {
+                        motor_cmd_publisher->Write(motor_cmd, 0);
+                        last_sent_time = now;
+                    }
+                }
+                previous_crc = crc;
 
                 // Check for overrun and sleep until next execution time
                 auto now = Clock::now();
