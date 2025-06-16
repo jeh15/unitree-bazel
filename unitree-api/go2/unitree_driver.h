@@ -194,6 +194,7 @@ class UnitreeDriver {
         ChannelPublisherPtr<unitree_go::msg::dds_::LowCmd_> motor_cmd_publisher;
         ChannelSubscriberPtr<unitree_go::msg::dds_::LowState_> robot_state_subscriber;
         // Control Thread:
+        uint32_t previous_crc = 0;
         uint32_t control_rate_us;
         uint32_t control_rate_limit_us;
         std::atomic<bool> running{true};
@@ -275,7 +276,7 @@ class UnitreeDriver {
         void control_loop() {
             using Clock = std::chrono::steady_clock;
             auto next_time = Clock::now();
-            auto last_sent_time;
+            auto last_sent_time = Clock::now();
             size_t consecutive_overruns = 0;
 
             // Thread Loop:
@@ -318,7 +319,7 @@ class UnitreeDriver {
                 previous_crc = crc;
 
                 // Check for overrun and sleep until next execution time
-                auto now = Clock::now();
+                now = Clock::now();
                 if (now < next_time) {
                     std::this_thread::sleep_until(next_time);
                     consecutive_overruns = 0;

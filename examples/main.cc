@@ -6,8 +6,8 @@
 #include "absl/log/absl_check.h"
 #include "rules_cc/cc/runfiles/runfiles.h"
 
-#include "unitree-api/unitree_driver.h"
-#include "unitree-api/containers.h"
+#include "unitree-api/go2/unitree_driver.h"
+#include "unitree-api/go2/containers.h"
 
 using namespace unitree::containers;
 using rules_cc::cc::runfiles::Runfiles;
@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
     );
 
     std::filesystem::path config_filepath = 
-        runfiles->Rlocation("unitree-bazel/unitree-api/config/qos_config.json");
+        runfiles->Rlocation("unitree-bazel/unitree-api/go2/config/qos_config.json");
     int control_rate_us = 2000;   // Control rate of inner control loop in microseconds.
     UnitreeDriver unitree_driver(config_filepath, control_rate_us);
     result.Update(unitree_driver.initialize());

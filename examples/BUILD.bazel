@@ -3,10 +3,10 @@ load("@rules_cc//cc:defs.bzl", "cc_binary")
 cc_binary(
     name = "main",
     srcs = ["main.cc"],
-    data = ["//unitree-api/config:json_config"],
+    data = ["//unitree-api/go2/config:json_config"],
     deps = [
-        "//unitree-api:unitree_driver",
-        "//unitree-api:containers",
+        "//unitree-api/go2:unitree_driver",
+        "//unitree-api/go2:containers",
         "@abseil-cpp//absl/status:status",
         "@abseil-cpp//absl/log:absl_check",
         "@rules_cc//cc/runfiles",
