@@ -38,6 +38,6 @@
     },
     "participant_qos": {
         "domain_id": 0,
-        "network_interface": "enx7cc2c647de4f"
+        "network_interface": "network_name"
     }
 }

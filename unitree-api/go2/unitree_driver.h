@@ -8,7 +8,7 @@
 #include <mutex>
 #include <atomic>
 #include <algorithm>
-#include <filesystem>
+#include <string>
 
 #include "absl/status/status.h"
 
@@ -31,17 +31,15 @@ using namespace unitree::containers;
 class UnitreeDriver {
     public:
         explicit UnitreeDriver(
-            const std::filesystem::path& config_filepath,
+            const std::string network_name,
             uint32_t control_rate_us = 2000,
             uint32_t control_rate_limit_us = 10000
-        ): config_filepath(config_filepath), control_rate_us(control_rate_us), control_rate_limit_us(control_rate_limit_us) {}
+        ): network_name(network_name), control_rate_us(control_rate_us), control_rate_limit_us(control_rate_limit_us) {}
         ~UnitreeDriver() {}
 
         absl::Status initialize() {
             // Initialize Channel:
-            // ChannelFactory::Instance()->Init(config_filepath);
-
-            ChannelFactory::Instance()->Init(0, "enx7cc2c647de4f");
+            ChannelFactory::Instance()->Init(0, network_name);
 
             // Initialization Command Message:
             init_cmd_msg();
@@ -190,7 +188,7 @@ class UnitreeDriver {
         const double PosStopF = (2.146E+9f);
         const double VelStopF = (16000.0f);
         // Communication and Messages:
-        std::filesystem::path config_filepath;
+        std::string network_name;
         unitree_go::msg::dds_::LowCmd_ motor_cmd{};
         unitree_go::msg::dds_::LowState_ robot_state{};
         ChannelPublisherPtr<unitree_go::msg::dds_::LowCmd_> motor_cmd_publisher;

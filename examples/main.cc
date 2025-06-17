@@ -4,28 +4,21 @@
 
 #include "absl/status/status.h"
 #include "absl/log/absl_check.h"
-#include "rules_cc/cc/runfiles/runfiles.h"
 
 #include "unitree-api/go2/unitree_driver.h"
 #include "unitree-api/go2/containers.h"
 
 using namespace unitree::containers;
-using rules_cc::cc::runfiles::Runfiles;
+
 
 int main(int argc, char** argv) {
     // Abseil Status:
     absl::Status result;
 
     // Initialize Unitree Driver:
-    std::string error;
-    std::unique_ptr<Runfiles> runfiles(
-        Runfiles::Create(argv[0], &error)
-    );
-
-    std::filesystem::path config_filepath = 
-        runfiles->Rlocation("unitree-bazel/unitree-api/go2/config/qos_config.json");
-    int control_rate_us = 2000;   // Control rate of inner control loop in microseconds.
-    UnitreeDriver unitree_driver(config_filepath, control_rate_us);
+    std::string network_name = "enx7cc2c647de4f";
+    uint32_t control_rate_us = 2000;   // Control rate of inner control loop in microseconds.
+    UnitreeDriver unitree_driver(network_name, control_rate_us);
     result.Update(unitree_driver.initialize());
     ABSL_CHECK(result.ok()) << result.message();
 
