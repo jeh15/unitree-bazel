@@ -35,7 +35,7 @@ const int32_t ROBOT_SPORT_API_ID_HELLO              = 1016;
 const int32_t ROBOT_SPORT_API_ID_STRETCH            = 1017;
 const int32_t ROBOT_SPORT_API_ID_TRAJECTORYFOLLOW   = 1018;
 const int32_t ROBOT_SPORT_API_ID_CONTINUOUSGAIT     = 1019;
-// const int32_t ROBOT_SPORT_API_ID_CONTENT            = 1020;
+const int32_t ROBOT_SPORT_API_ID_CONTENT            = 1020;
 const int32_t ROBOT_SPORT_API_ID_WALLOW             = 1021;
 const int32_t ROBOT_SPORT_API_ID_DANCE1             = 1022;
 const int32_t ROBOT_SPORT_API_ID_DANCE2             = 1023;
@@ -57,6 +57,15 @@ const int32_t ROBOT_SPORT_API_ID_DANCE4             = 1038;
 const int32_t ROBOT_SPORT_API_ID_HOPSPINLEFT        = 1039;
 const int32_t ROBOT_SPORT_API_ID_HOPSPINRIGHT       = 1040;
 
+const int32_t ROBOT_SPORT_API_ID_LEFTFLIP           = 1042;
+const int32_t ROBOT_SPORT_API_ID_BACKFLIP           = 1044;
+const int32_t ROBOT_SPORT_API_ID_FREEWALK           = 1045;
+const int32_t ROBOT_SPORT_API_ID_FREEBOUND          = 1046;
+const int32_t ROBOT_SPORT_API_ID_FREEJUMP           = 1047;
+const int32_t ROBOT_SPORT_API_ID_FREEAVOID          = 1048;
+const int32_t ROBOT_SPORT_API_ID_WALKSTAIR          = 1049;
+const int32_t ROBOT_SPORT_API_ID_WALKUPRIGHT        = 1050;
+const int32_t ROBOT_SPORT_API_ID_CROSSSTEP          = 1051;
 
 }
 }
