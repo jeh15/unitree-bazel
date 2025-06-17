@@ -9,9 +9,10 @@ cc_library(
 
 cc_library(
     name = "unitree_go2_api",
+    data = ["//unitree-api/go2/config:json_config"],
     deps = [
-        "//unitree-api:unitree_driver",
-        "//unitree-api:containers",
+        "//unitree-api/go2:unitree_driver",
+        "//unitree-api/go2:containers",
     ],
     visibility = ["//visibility:public"],
 )
