@@ -65,7 +65,7 @@ PYBIND11_MODULE(unitree_api, m) {
         .def_readwrite("damping", &unitree::containers::MotorCommand::damping);
 
     py::class_<UnitreeDriver>(m, "UnitreeDriver")
-        .def(py::init<const std::string, int>())
+        .def(py::init<const std::string, uint32_t, uint32_t>())
         .def("initialize", &UnitreeDriver::initialize)
         .def("initialize_thread", &UnitreeDriver::initialize_thread)
         .def("stop_thread", &UnitreeDriver::stop_thread)

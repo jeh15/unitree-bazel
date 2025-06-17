@@ -1,4 +1,5 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@rules_python//python:py_binary.bzl", "py_binary")
 
 cc_binary(
     name = "main",
@@ -8,6 +9,15 @@ cc_binary(
         "//unitree-api/go2:containers",
         "@abseil-cpp//absl/status:status",
         "@abseil-cpp//absl/log:absl_check",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+py_binary(
+    name = "main_py",
+    srcs = ["main_py.py"],
+    deps = [
+        "//:unitree_api_bindings",
     ],
     visibility = ["//visibility:public"],
 )
