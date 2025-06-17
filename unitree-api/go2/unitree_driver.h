@@ -39,7 +39,9 @@ class UnitreeDriver {
 
         absl::Status initialize() {
             // Initialize Channel:
-            ChannelFactory::Instance()->Init(config_filepath);
+            // ChannelFactory::Instance()->Init(config_filepath);
+
+            ChannelFactory::Instance()->Init(0, "enx7cc2c647de4f");
 
             // Initialization Command Message:
             init_cmd_msg();
